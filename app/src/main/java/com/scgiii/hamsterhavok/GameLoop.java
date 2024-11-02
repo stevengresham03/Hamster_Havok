@@ -8,8 +8,6 @@ public class GameLoop extends Thread {
     private GameViews gameViews;
 
     private boolean isRunning = false;
-    private double averageUPS;
-    private double averageFPS;
     private static final double MAX_UPS = 70.0;
     private static final double UPS_PERIOD = 1E+3/MAX_UPS;
 
@@ -34,6 +32,7 @@ public class GameLoop extends Thread {
         }
     }
 
+    //this is the actual gameloop
     @Override
     public void run(){
         super.run();
@@ -54,12 +53,11 @@ public class GameLoop extends Thread {
             try {
                 //locking canvas to draw bitmap
                 canvas = surfaceHolder.lockCanvas();
-                //prohibits multiple threads from calling update and draw methods of this surfaceHolder at same time as this thread
+                //stops multiple threads from calling update and draw methods of this surfaceHolder at same time as this thread
                 synchronized (surfaceHolder) {
-                    gameViews.background.update(gameViews.isMovingForward(), gameViews.isMovingBackward());
                     gameViews.update();
-                    updateCount++;
                     gameViews.draw(canvas);
+                    updateCount++;
                 }
             }catch (Exception e) {
                 e.printStackTrace();
@@ -95,25 +93,7 @@ public class GameLoop extends Thread {
 
             }
 
-            //calculating average UPS and FPS
-            elapsedTime = System.currentTimeMillis() - startTime;
-            if(elapsedTime > 1000){
-                averageUPS = updateCount / (1E-3 * elapsedTime);
-                averageFPS = frameCount / (1E-3 * elapsedTime);
-                updateCount = 0;
-                frameCount = 0;
-                startTime = System.currentTimeMillis();
-            }
-
         }
-    }
-
-    public double getAverageUPS() {
-        return averageUPS;
-    }
-
-    public double getAverageFPS() {
-        return averageFPS;
     }
 
 

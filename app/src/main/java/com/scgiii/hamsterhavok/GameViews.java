@@ -1,6 +1,7 @@
 package com.scgiii.hamsterhavok;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -20,6 +21,9 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     public Background background;
     private Player hamster;
     private Roomba roomba;
+    private GameButton leftButton;
+    private GameButton rightButton;
+    private GameButton jumpButton;
 
     public GameViews(Context context) {
         super(context);
@@ -29,11 +33,22 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         surfaceHolder.addCallback(this);
 
         gameLoop = new GameLoop(this, surfaceHolder);
-        background = new Background(context);
+        background = new Background(getContext());
         hamster = new Player(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.player), 900, 724);
         roomba = new Roomba(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba), 0,900);
+
+        int buttonWidth = 200;
+        int buttonHeight = 100;
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+
+        leftButton = new GameButton(50, screenHeight - 150, 250, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.left_button));
+        rightButton = new GameButton(300, screenHeight - 150, 500, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.right_button));
+        jumpButton = new GameButton(screenWidth - 250, screenHeight - 150, screenWidth - 50, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.jump_button));
         //used to control whether a view can gain focus, which means it can receive input events like key presses/touch events.
         setFocusable(true);
+
+
 
     }
 
@@ -44,7 +59,6 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-
     }
 
     @Override
@@ -53,7 +67,8 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void update() {
-
+        hamster.update();
+        background.update(isMovingForward, isMovingBackward);
     }
 
     public void resume(){
@@ -71,55 +86,39 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         background.draw(canvas);
         hamster.draw(canvas);
         roomba.draw(canvas);
-        drawFPS(canvas);
-        drawUPS(canvas);
+        leftButton.draw(canvas);
+        rightButton.draw(canvas);
+        jumpButton.draw(canvas);
     }
 
-    public void drawUPS(Canvas canvas){
-        String averageUPS = Double.toString(gameLoop.getAverageUPS());
-        Paint paint = new Paint();
-        int color = ContextCompat.getColor(getContext(), R.color.white);
-        paint.setColor(color);
-        paint.setTextSize(50);
-        canvas.drawText("UPS" + averageUPS, 150, 120, paint);
-    }
-
-    public void drawFPS(Canvas canvas){
-        String averageFPS = Double.toString(gameLoop.getAverageFPS());
-        Paint paint = new Paint();
-        int color = ContextCompat.getColor(getContext(), R.color.white);
-        paint.setColor(color);
-        paint.setTextSize(50);
-        canvas.drawText("FPS" + averageFPS, 150, 220, paint);
-    }
-
+    //onTouchEvent for controls
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (event.getX() > getWidth() / 2) { // Check if touch is on the left side
-                    isMovingBackward = true;
-                    isMovingForward = false; // Stop right movement
-                } else { // Touch is on the right side
-                    isMovingForward = true;
-                    isMovingBackward = false; // Stop left movement
-                }
-                break;
             case MotionEvent.ACTION_MOVE:
-                if (event.getX() > getWidth() / 2) {
-                    isMovingBackward = true; // Continue moving left
-                    isMovingForward = false; // Stop right movement
-                } else {
-                    isMovingForward = true; // Continue moving right
-                    isMovingBackward = false; // Stop left movement
+                //gets position of tap
+                int x = (int) event.getX();
+                int y = (int) event.getY();
+                //checks to see if tap is in each button's rectangle
+                if (leftButton.isPressed(x,y)) {
+                    isMovingBackward = true;
+                    isMovingForward = false;
+                    hamster.moveLeft();
+                } else if (rightButton.isPressed(x,y)) {
+                    isMovingForward = true;
+                    isMovingBackward = false;
+                    hamster.moveRight();
+                } else if(jumpButton.isPressed(x,y)) {
+                    hamster.jump();
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                isMovingBackward = false; // Stop moving left when touch is released
-                isMovingForward = false; // Stop moving right when touch is released
+                isMovingBackward = false;
+                isMovingForward = false;
+                hamster.stopMoving();
                 break;
         }
-
         return true;
     }
 

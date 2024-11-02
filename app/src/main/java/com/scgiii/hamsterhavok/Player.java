@@ -19,19 +19,57 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class Player extends PlayerObject{
+    private float velocityX, velocityY;
+    private float gravity;
+    private boolean isJumping;
+    private int screenHeight;
 
     public Player(Context context, Bitmap bitmap, float x, float y) {
         super(bitmap, x, y);
-
-        //MIGUEL this is what i was talking about. these two lines don't work here, but did in first github upload.
-        //for now, the x an Y are currently hardcoded. We can worry about this later though. I want to get joystick first
-        //x = getWidth() / 2 - bitmap.getWidth() / 2;
-        //y = getHeight() - bitmap.getHeight(); // Initialize position
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.gravity = 0.9f;
+        this.isJumping = false;
+        this.screenHeight = context.getResources().getDisplayMetrics().heightPixels;
     }
 
     @Override
     public void draw(Canvas canvas) {
         canvas.drawBitmap(bitmap, x, y, null);
+    }
+
+    public void update() {
+        // Applies gravity to game
+        velocityY += gravity;
+
+        // Updates position
+        y += velocityY;
+
+        // ground collision
+        if (y > screenHeight - bitmap.getHeight()) {
+            y = screenHeight - bitmap.getHeight();
+            velocityY = 0;
+            isJumping = false;
+        }
+    }
+
+    public void moveLeft() {
+        velocityX = -10;
+    }
+
+    public void moveRight() {
+        velocityX = 10;
+    }
+
+    public void jump() {
+        if (!isJumping) {
+            velocityY = -40; // Adjust jump strength as needed
+            isJumping = true;
+        }
+    }
+
+    public void stopMoving() {
+        velocityX = 0;
     }
 
     public void setPosition(float x, float y) {
