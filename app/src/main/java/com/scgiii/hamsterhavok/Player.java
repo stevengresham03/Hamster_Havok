@@ -1,22 +1,8 @@
 package com.scgiii.hamsterhavok;
 
-import static android.opengl.ETC1.getHeight;
-import static android.opengl.ETC1.getWidth;
-
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-
-
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
 
 public class Player extends PlayerObject{
     private float velocityX, velocityY;
