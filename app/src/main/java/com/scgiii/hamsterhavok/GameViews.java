@@ -1,5 +1,6 @@
 package com.scgiii.hamsterhavok;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,22 +11,19 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
+import android.graphics.Rect;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 //Manages all objects in game and is responsible for updating all states and rendering objects to screen.
 public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
-    private boolean isMovingForward = false;
-    private boolean isMovingBackward = false;
-
-    private GameLoop gameLoop;
+    private final GameLoop gameLoop;
     public Background background;
-    private Player hamster;
-    private Roomba roomba;
-    private GameButton leftButton;
-    private GameButton rightButton;
-    private GameButton jumpButton;
+    private final Player hamster;
+    private final Roomba roomba;
+    private final GameButton leftButton;
+    private final GameButton rightButton;
+    private final GameButton jumpButton;
 
     public GameViews(Context context) {
         super(context);
@@ -93,6 +91,80 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         jumpButton.draw(canvas);
     }
 
+
+    //two dummy varaibles so game doesn't break before user touches screen
+    private boolean isButtonPressed = false;
+    private int activePointerId = -1;
+
+//the line directlhy below just gets the IDE to stop bothering me lols. Doesn't cause any errors
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        //gets the action, and where the user has touched
+        int action = event.getActionMasked();
+        int pointerIndex = event.getActionIndex();
+        int pointerId = event.getPointerId(pointerIndex);
+
+
+        //switch case for where the user has touched (if they've touched the buttons)
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
+                if (leftButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
+                    isButtonPressed = true;
+                    activePointerId = pointerId;
+                    hamster.moveLeft();
+                } else if (rightButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
+                    isButtonPressed = true;
+                    activePointerId = pointerId;
+                    hamster.moveRight();
+                } else if (jumpButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
+
+                    isButtonPressed = true;
+                    //i took this next line out bc it makes the hamster stop moving when jumping
+                   // activePointerId = pointerId;
+                    hamster.jump();
+                }
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                if (isButtonPressed) {
+                    int index = event.findPointerIndex(activePointerId);
+                    if (index != -1) {
+                        float x = event.getX(index);
+                        float y = event.getY(index);
+                        if (!leftButton.contains(x, y) && !rightButton.contains(x, y)) {
+                            // Finger moved outside the move forward or backward buttons
+                            releaseLeftRightButtons();
+                        }
+
+                    }
+                }
+                break;
+
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_CANCEL:
+                if (pointerId == activePointerId) {
+                    releaseLeftRightButtons();
+                }
+                break;
+        }
+        return true;
+    }
+
+    private void releaseLeftRightButtons() {
+        isButtonPressed = false;
+        activePointerId = -1;
+        hamster.stopMoving();
+
+    }
+    /* saving this in case we need it later for whatever reason, but it can be safely deleted prolly
+private boolean isInButton(MotionEvent event, Rect buttonRect) {
+    return buttonRect.contains((int)event.getX(), (int)event.getY());
+}*/
+/*
     //onTouchEvent for controls
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -125,5 +197,5 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
 
     public boolean isMovingBackward() {
         return isMovingBackward;
-    }
+    }*/
 }
