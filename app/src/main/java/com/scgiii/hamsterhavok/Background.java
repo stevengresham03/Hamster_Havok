@@ -4,18 +4,38 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.WindowManager;
 
 public class Background {
-    private Bitmap bitmap;
+    private final Bitmap bitmap;
     private float offsetX1, offsetX2;
     private float scrollSpeed;
     static int SCREEN_WIDTH, SCREEN_HEIGHT;
+    private final Context context;
+    private int screenHeight;
+
+
 
     public Background(Context context) {
+        this.context = context;
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.background);
         offsetX1 = 0;
         offsetX2 = bitmap.getWidth();
         scrollSpeed = 5;
+    }
+
+
+
+    public void getScreenDimensions() {
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        screenHeight = displayMetrics.heightPixels;
+
+
+        // Use screenHeight and screenWidth as needed
     }
 
     public void update() {
@@ -39,8 +59,14 @@ public class Background {
     }
 
     public void draw(Canvas canvas) {
-        canvas.drawBitmap(bitmap, offsetX1, -600, null);
-        canvas.drawBitmap(bitmap, offsetX2, -600, null);
+        getScreenDimensions();
+       // Log.d("background","screen height: " + screenHeight );
+        double tempHeight = screenHeight * .5;
+        screenHeight = (int) Math.floor(tempHeight);
+        //Log.d("background","screen height: " + screenHeight );
+
+        canvas.drawBitmap(bitmap, offsetX1, -screenHeight, null);
+        canvas.drawBitmap(bitmap, offsetX2, -screenHeight, null);
     }
 
     public void recycle() {

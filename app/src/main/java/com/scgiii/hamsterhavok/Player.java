@@ -6,9 +6,9 @@ import android.graphics.Canvas;
 
 public class Player extends PlayerObject{
     private float velocityX, velocityY;
-    private float gravity;
+    private final float gravity;
     private boolean isJumping;
-    private int screenHeight, screenWidth;
+    public int screenHeight, screenWidth;
 
     public Player(Context context, Bitmap bitmap, float x, float y) {
         super(bitmap, x, y);
@@ -57,7 +57,7 @@ public class Player extends PlayerObject{
 
     public void jump() {
         if (!isJumping) {
-            velocityY = -40; // Adjust jump strength as needed
+            velocityY = -33; // Adjust jump strength as needed
             isJumping = true;
         }
     }
