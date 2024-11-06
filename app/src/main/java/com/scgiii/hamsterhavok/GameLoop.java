@@ -46,7 +46,6 @@ public class GameLoop extends Thread {
 
         startTime = System.currentTimeMillis();
         //this while loop is the GameLoop (constantly repeats while isRunning=true)
-
         while(isRunning){
             //is it better to initialize canvas here or before while loop????????????
             Canvas canvas = null;
