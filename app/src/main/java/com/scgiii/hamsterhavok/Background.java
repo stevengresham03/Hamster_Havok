@@ -1,38 +1,35 @@
 package com.scgiii.hamsterhavok;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
 public class Background {
     private Bitmap bitmap;
-    private float offsetX1;
-    private float offsetX2;
+    private float offsetX1, offsetX2;
+    private float scrollSpeed;
     static int SCREEN_WIDTH, SCREEN_HEIGHT;
 
     public Background(Context context) {
         //setScreenSize(context);
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.background);
-       // bitmap = Bitmap.createScaledBitmap(bitmap, screenX, screenY, false );
+        // bitmap = Bitmap.createScaledBitmap(bitmap, screenX, screenY, false );
         offsetX1 = 0;
         offsetX2 = bitmap.getWidth();
+        scrollSpeed = 5;
     }
 
-    public void update(boolean isMovingForward, boolean isMovingBackward) {
+    public void update() {
         //background moves left or right depending on action of hamster
         float scrollSpeed = 5;
-        if (isMovingBackward) {
-            offsetX1 += scrollSpeed;
-            offsetX2 += scrollSpeed;
-        }
-        if (isMovingForward) {
-            offsetX1 -= scrollSpeed;
-            offsetX2 -= scrollSpeed;
-        }
+        offsetX1 -= scrollSpeed;
+        offsetX2 -= scrollSpeed;
 
         // Reset positions if out of bounds
         if (offsetX1 <= -bitmap.getWidth()) {

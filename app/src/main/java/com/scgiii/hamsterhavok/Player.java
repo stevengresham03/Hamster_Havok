@@ -22,7 +22,7 @@ public class Player extends PlayerObject{
     private float velocityX, velocityY;
     private float gravity;
     private boolean isJumping;
-    private int screenHeight;
+    private int screenHeight, screenWidth;
 
     public Player(Context context, Bitmap bitmap, float x, float y) {
         super(bitmap, x, y);
@@ -31,6 +31,7 @@ public class Player extends PlayerObject{
         this.gravity = 0.9f;
         this.isJumping = false;
         this.screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+        this.screenWidth = context.getResources().getDisplayMetrics().widthPixels;
     }
 
     @Override
@@ -43,6 +44,7 @@ public class Player extends PlayerObject{
         velocityY += gravity;
 
         // Updates position
+        x += velocityX;
         y += velocityY;
 
         // ground collision
@@ -50,6 +52,12 @@ public class Player extends PlayerObject{
             y = screenHeight - bitmap.getHeight();
             velocityY = 0;
             isJumping = false;
+        }
+
+        //screen boundaries
+        if(x < 0) x = 0;
+        if(x > screenWidth - bitmap.getWidth()){
+            x = screenWidth - bitmap.getWidth();
         }
     }
 

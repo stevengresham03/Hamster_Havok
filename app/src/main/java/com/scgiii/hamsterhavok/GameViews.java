@@ -4,7 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -68,7 +70,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
 
     public void update() {
         hamster.update();
-        background.update(isMovingForward, isMovingBackward);
+        background.update();
     }
 
     public void resume(){
@@ -102,20 +104,14 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
                 int y = (int) event.getY();
                 //checks to see if tap is in each button's rectangle
                 if (leftButton.isPressed(x,y)) {
-                    isMovingBackward = true;
-                    isMovingForward = false;
                     hamster.moveLeft();
                 } else if (rightButton.isPressed(x,y)) {
-                    isMovingForward = true;
-                    isMovingBackward = false;
                     hamster.moveRight();
                 } else if(jumpButton.isPressed(x,y)) {
                     hamster.jump();
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                isMovingBackward = false;
-                isMovingForward = false;
                 hamster.stopMoving();
                 break;
         }
