@@ -29,6 +29,7 @@ public class Player extends PlayerObject{
         // Applies gravity to game
         velocityY += gravity;
 
+
         // Updates position
         x += velocityX;
         y += velocityY;
@@ -69,6 +70,13 @@ public class Player extends PlayerObject{
     public void setPosition(float x, float y) {
         this.x = x;
         this.y = y;
+    }
+
+    public float getPositionX() {
+        return x;
+    }
+    public float getPositionY() {
+        return y;
     }
 
 }

@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -24,6 +25,9 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private final GameButton leftButton;
     private final GameButton rightButton;
     private final GameButton jumpButton;
+
+
+    private boolean isGameRunning;
 
     public GameViews(Context context) {
         super(context);
@@ -51,6 +55,39 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
 
 
     }
+/*I'm gonna be so real: the game seems to function without saveState or restoreState
+    but I'm keeping them here anyways bc they don't seem to mess anything up and we might need them later?
+    But the mainActivity seems to handle the pause/resume by itself with the onResume method
+ */
+    public void saveState(Bundle outState) {
+        //outState saves these values with the key (first parameter)
+        outState.putFloat("playerX", hamster.getPositionX());
+        outState.putFloat("playerY", hamster.getPositionY());
+        //outState.putInt("score", score);
+       outState.putFloat("backgroundOffsetX1", background.getOffsetX1());
+        outState.putFloat("backgroundOffsetX2", background.getOffsetX2());
+
+
+        outState.putBoolean("isGameRunning", isGameRunning);
+        // Save any other necessary game state
+    }
+
+    public void restoreState(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            //savedInstanceState pulls the values with the key provided in first parameter, and if not found it will use the 2nd parameter as default value
+            //these variables are for saving the state for resume/pause and opening and closing app
+            float playerX = savedInstanceState.getFloat("playerX", 1240);
+            float playerY = savedInstanceState.getFloat("playerY", 792);
+            float backgroundOffsetX1 = savedInstanceState.getFloat("backgroundOffsetX1", 0);
+            float backgroundOffsetX2 = savedInstanceState.getFloat("backgroundOffsetX2", -1500);
+            hamster.setPosition(playerX, playerY);
+
+            //  score = savedInstanceState.getInt("score", 0);
+            isGameRunning = savedInstanceState.getBoolean("isGameRunning", false);
+            // Restore any other saved game state
+
+        }
+    }
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
@@ -71,13 +108,6 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         background.update();
     }
 
-    public void resume(){
-        gameLoop.startLoop();
-    }
-
-    public void pause(){
-        gameLoop.stopLoop();
-    }
 
     @Override
     public void draw(Canvas canvas){
@@ -158,8 +188,11 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         isButtonPressed = false;
         activePointerId = -1;
         hamster.stopMoving();
+        //Log.d("GameViews", "PlayerX,Y" + hamster.getPositionX() + " " + hamster.getPositionY());
 
     }
+
+
     /* saving this in case we need it later for whatever reason, but it can be safely deleted prolly
 private boolean isInButton(MotionEvent event, Rect buttonRect) {
     return buttonRect.contains((int)event.getX(), (int)event.getY());
