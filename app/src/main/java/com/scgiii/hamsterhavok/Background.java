@@ -25,6 +25,13 @@ public class Background {
         offsetX2 = bitmap.getWidth();
         scrollSpeed = 5;
     }
+    public float getOffsetX1(){
+        return offsetX1;
+    }
+
+    public float getOffsetX2(){
+        return offsetX2;
+    }
 
 
 
@@ -63,7 +70,7 @@ public class Background {
        // Log.d("background","screen height: " + screenHeight );
         double tempHeight = screenHeight * .5;
         screenHeight = (int) Math.floor(tempHeight);
-        //Log.d("background","screen height: " + screenHeight );
+        Log.d("background","offset2: " + offsetX2);
 
         canvas.drawBitmap(bitmap, offsetX1, -screenHeight, null);
         canvas.drawBitmap(bitmap, offsetX2, -screenHeight, null);

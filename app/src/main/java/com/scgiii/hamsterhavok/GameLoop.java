@@ -32,6 +32,19 @@ public class GameLoop extends Thread {
         }
     }
 
+    private boolean isPaused = false;
+
+    public void pauseLoop() {
+        isPaused = true;
+    }
+
+    public void resumeLoop() {
+        isPaused = false;
+        synchronized (this) {
+            this.notify();
+        }
+    }
+
     //this is the actual gameloop
     @Override
     public void run(){
@@ -47,6 +60,16 @@ public class GameLoop extends Thread {
         startTime = System.currentTimeMillis();
         //this while loop is the GameLoop (constantly repeats while isRunning=true)
         while(isRunning){
+            //this try/catch is what Steven added 11/8 11:30pm
+            if (isPaused) {
+                synchronized (this) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
             //is it better to initialize canvas here or before while loop????????????
             Canvas canvas = null;
             try {
