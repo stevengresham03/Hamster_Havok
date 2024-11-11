@@ -55,6 +55,15 @@ public class Player extends PlayerObject{
     public void moveRight() {
         velocityX = 10;
     }
+    //enemy
+/*
+    private void checkCollisions(List<GameObject> gameObjects) {
+        for (GameObject obj : gameObjects) {
+            if (this.getBounds().intersect(obj.getBounds())) {
+                // Handle collision
+            }
+        }
+    }*/
 
     public void jump() {
         if (!isJumping) {

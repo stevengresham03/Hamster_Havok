@@ -16,6 +16,11 @@ import android.graphics.Rect;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+
 //Manages all objects in game and is responsible for updating all states and rendering objects to screen.
 public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private final GameLoop gameLoop;
@@ -25,6 +30,12 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private final GameButton leftButton;
     private final GameButton rightButton;
     private final GameButton jumpButton;
+
+    //obstacle code once we have a class
+    private List<Obstacle> obstacles;
+    private Random random;
+    private long lastObstacleSpawnTime;
+    private static final long OBSTACLE_SPAWN_INTERVAL = 3000; // 3 seconds
 
 
     private boolean isGameRunning;
@@ -39,7 +50,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this, surfaceHolder);
         background = new Background(getContext());
         hamster = new Player(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.player), 900, 724);
-        roomba = new Roomba(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba), 0,900);
+        roomba = new Roomba(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba), 0, 900);
 
         int buttonWidth = 200;
         int buttonHeight = 100;
@@ -52,42 +63,52 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         //used to control whether a view can gain focus, which means it can receive input events like key presses/touch events.
         setFocusable(true);
 
+        //enemies code for later
+        obstacles = new ArrayList<>();
+        random = new Random();
+        lastObstacleSpawnTime = System.currentTimeMillis();
 
 
     }
-/*I'm gonna be so real: the game seems to function without saveState or restoreState
-    but I'm keeping them here anyways bc they don't seem to mess anything up and we might need them later?
-    But the mainActivity seems to handle the pause/resume by itself with the onResume method
- */
-    public void saveState(Bundle outState) {
-        //outState saves these values with the key (first parameter)
-        outState.putFloat("playerX", hamster.getPositionX());
-        outState.putFloat("playerY", hamster.getPositionY());
-        //outState.putInt("score", score);
-       outState.putFloat("backgroundOffsetX1", background.getOffsetX1());
-        outState.putFloat("backgroundOffsetX2", background.getOffsetX2());
 
 
-        outState.putBoolean("isGameRunning", isGameRunning);
-        // Save any other necessary game state
+    private void spawnObstacle() {
+        int screenWidth = getWidth();
+        int screenHeight = getHeight();
+        float obstacleY = random.nextFloat() * (screenHeight - 100); // Adjust 100 based on obstacle height
+        float speed = 5 + random.nextFloat() * 5; // Random speed between 5 and 10
+        int direction = random.nextBoolean() ? 1 : -1; // Randomly choose direction
+        float obstacleX = (direction == 1) ? screenWidth : -100; // Start off-screen
+
+        Bitmap obstacleBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.roomba);
+        Obstacle obstacle = new Obstacle(getContext(), obstacleBitmap, obstacleX, obstacleY);
+        obstacles.add(obstacle);
     }
 
-    public void restoreState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            //savedInstanceState pulls the values with the key provided in first parameter, and if not found it will use the 2nd parameter as default value
-            //these variables are for saving the state for resume/pause and opening and closing app
-            float playerX = savedInstanceState.getFloat("playerX", 1240);
-            float playerY = savedInstanceState.getFloat("playerY", 792);
-            float backgroundOffsetX1 = savedInstanceState.getFloat("backgroundOffsetX1", 0);
-            float backgroundOffsetX2 = savedInstanceState.getFloat("backgroundOffsetX2", -1500);
-            hamster.setPosition(playerX, playerY);
+    private void updateObstacles() {
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastObstacleSpawnTime > OBSTACLE_SPAWN_INTERVAL) {
+            spawnObstacle();
+            lastObstacleSpawnTime = currentTime;
+        }
 
-            //  score = savedInstanceState.getInt("score", 0);
-            isGameRunning = savedInstanceState.getBoolean("isGameRunning", false);
-            // Restore any other saved game state
-
+        Iterator<Obstacle> iterator = obstacles.iterator();
+        while (iterator.hasNext()) {
+            Obstacle obstacle = iterator.next();
+            obstacle.update();
+            if (obstacle.isOffScreen(getWidth())) {
+                iterator.remove(); // Remove obstacle if off-screen
+            }
         }
     }
+
+    private void drawObstacles(Canvas canvas) {
+        for (Obstacle obstacle : obstacles) {
+            obstacle.draw(canvas);
+        }
+    }
+
+
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
@@ -106,11 +127,12 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     public void update() {
         hamster.update();
         background.update();
+        updateObstacles();
     }
 
 
     @Override
-    public void draw(Canvas canvas){
+    public void draw(Canvas canvas) {
         super.draw(canvas);
 
         background.draw(canvas);
@@ -119,6 +141,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         leftButton.draw(canvas);
         rightButton.draw(canvas);
         jumpButton.draw(canvas);
+        drawObstacles(canvas);
     }
 
 
@@ -126,7 +149,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private boolean isButtonPressed = false;
     private int activePointerId = -1;
 
-//the line directlhy below just gets the IDE to stop bothering me lols. Doesn't cause any errors
+    //the line directlhy below just gets the IDE to stop bothering me lols. Doesn't cause any errors
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -153,7 +176,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
 
                     isButtonPressed = true;
                     //i took this next line out bc it makes the hamster stop moving when jumping
-                   // activePointerId = pointerId;
+                    // activePointerId = pointerId;
                     hamster.jump();
                 }
                 break;
@@ -193,42 +216,37 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
-    /* saving this in case we need it later for whatever reason, but it can be safely deleted prolly
-private boolean isInButton(MotionEvent event, Rect buttonRect) {
-    return buttonRect.contains((int)event.getX(), (int)event.getY());
-}*/
-/*
-    //onTouchEvent for controls
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE:
-                //gets position of tap
-                int x = (int) event.getX();
-                int y = (int) event.getY();
-                //checks to see if tap is in each button's rectangle
-                if (leftButton.isPressed(x,y)) {
-                    hamster.moveLeft();
-                } else if (rightButton.isPressed(x,y)) {
-                    hamster.moveRight();
-                } else if(jumpButton.isPressed(x,y)) {
-                    hamster.jump();
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                hamster.stopMoving();
-                break;
+    /*I'm gonna be so real: the game seems to function without saveState or restoreState
+    but I'm keeping them here anyways bc they don't seem to mess anything up and we might need them later?
+    But the mainActivity seems to handle the pause/resume by itself with the onResume method
+ */
+    public void saveState(Bundle outState) {
+        //outState saves these values with the key (first parameter)
+        outState.putFloat("playerX", hamster.getPositionX());
+        outState.putFloat("playerY", hamster.getPositionY());
+        //outState.putInt("score", score);
+        outState.putFloat("backgroundOffsetX1", background.getOffsetX1());
+        outState.putFloat("backgroundOffsetX2", background.getOffsetX2());
+
+
+        outState.putBoolean("isGameRunning", isGameRunning);
+        // Save any other necessary game state
+    }
+
+    public void restoreState(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            //savedInstanceState pulls the values with the key provided in first parameter, and if not found it will use the 2nd parameter as default value
+            //these variables are for saving the state for resume/pause and opening and closing app
+            float playerX = savedInstanceState.getFloat("playerX", 1240);
+            float playerY = savedInstanceState.getFloat("playerY", 792);
+            float backgroundOffsetX1 = savedInstanceState.getFloat("backgroundOffsetX1", 0);
+            float backgroundOffsetX2 = savedInstanceState.getFloat("backgroundOffsetX2", -1500);
+            hamster.setPosition(playerX, playerY);
+
+            //  score = savedInstanceState.getInt("score", 0);
+            isGameRunning = savedInstanceState.getBoolean("isGameRunning", false);
+            // Restore any other saved game state
+
         }
-        return true;
     }
-
-
-    public boolean isMovingForward() {
-        return isMovingForward;
-    }
-
-    public boolean isMovingBackward() {
-        return isMovingBackward;
-    }*/
 }
