@@ -26,16 +26,18 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private final GameLoop gameLoop;
     public Background background;
     private final Player hamster;
-    private final Roomba roomba;
+
     private final GameButton leftButton;
     private final GameButton rightButton;
     private final GameButton jumpButton;
 
-    //obstacle code once we have a class
+    //obstacle code
     private List<Obstacle> obstacles;
     private Random random;
     private long lastObstacleSpawnTime;
     private static final long OBSTACLE_SPAWN_INTERVAL = 3000; // 3 seconds
+    private ObstacleFactory obstacleFactory;
+
 
 
     private boolean isGameRunning;
@@ -50,7 +52,6 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop = new GameLoop(this, surfaceHolder);
         background = new Background(getContext());
         hamster = new Player(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.player), 900, 724);
-        roomba = new Roomba(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba), 0, 900);
 
         int buttonWidth = 200;
         int buttonHeight = 100;
@@ -63,25 +64,14 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         //used to control whether a view can gain focus, which means it can receive input events like key presses/touch events.
         setFocusable(true);
 
-        //enemies code for later
+        //obstacle code for later
         obstacles = new ArrayList<>();
-        random = new Random();
+        obstacleFactory = new ObstacleFactory(context, getWidth()); // Adjust ground height
         lastObstacleSpawnTime = System.currentTimeMillis();
-
-
     }
 
-
     private void spawnObstacle() {
-        int screenWidth = getWidth();
-        int screenHeight = getHeight();
-        float obstacleY = random.nextFloat() * (screenHeight - 100); // Adjust 100 based on obstacle height
-        float speed = 5 + random.nextFloat() * 5; // Random speed between 5 and 10
-        int direction = random.nextBoolean() ? 1 : -1; // Randomly choose direction
-        float obstacleX = (direction == 1) ? screenWidth : -100; // Start off-screen
-
-        Bitmap obstacleBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.roomba);
-        Obstacle obstacle = new Obstacle(getContext(), obstacleBitmap, obstacleX, obstacleY);
+        Obstacle obstacle = obstacleFactory.createRandomObstacle(getRightEdgeOfScreen());
         obstacles.add(obstacle);
     }
 
@@ -96,8 +86,8 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         while (iterator.hasNext()) {
             Obstacle obstacle = iterator.next();
             obstacle.update();
-            if (obstacle.isOffScreen(getWidth())) {
-                iterator.remove(); // Remove obstacle if off-screen
+            if (obstacle.isOffScreen()) {
+                iterator.remove();
             }
         }
     }
@@ -107,8 +97,6 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
             obstacle.draw(canvas);
         }
     }
-
-
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
@@ -128,7 +116,10 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         hamster.update();
         background.update();
         updateObstacles();
+        //checkCollisions();
     }
+
+
 
 
     @Override
@@ -137,7 +128,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
 
         background.draw(canvas);
         hamster.draw(canvas);
-        roomba.draw(canvas);
+
         leftButton.draw(canvas);
         rightButton.draw(canvas);
         jumpButton.draw(canvas);
@@ -248,5 +239,8 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
             // Restore any other saved game state
 
         }
+    }
+    private float getRightEdgeOfScreen() {
+        return getWidth(); // Assuming 0 is the left edge
     }
 }

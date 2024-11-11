@@ -11,7 +11,7 @@ import android.view.WindowManager;
 public class Background {
     private final Bitmap bitmap;
     private float offsetX1, offsetX2;
-    private float scrollSpeed;
+    public static float scrollSpeed;
     static int SCREEN_WIDTH, SCREEN_HEIGHT;
     private final Context context;
     private int screenHeight;

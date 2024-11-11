@@ -8,7 +8,8 @@ public class Player extends PlayerObject{
     private float velocityX, velocityY;
     private final float gravity;
     private boolean isJumping;
-    public int screenHeight, screenWidth;
+    public static int screenHeight;
+    public int screenWidth;
 
     public Player(Context context, Bitmap bitmap, float x, float y) {
         super(bitmap, x, y);
