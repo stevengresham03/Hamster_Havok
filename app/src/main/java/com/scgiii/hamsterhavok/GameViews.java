@@ -37,6 +37,10 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private long lastObstacleSpawnTime;
     private static final long OBSTACLE_SPAWN_INTERVAL = 3000; // 3 seconds
     private ObstacleFactory obstacleFactory;
+    private ObstaclePool obstaclePool;
+
+    private boolean isPlaying;
+    private Thread gameThread;
 
 
 
@@ -65,38 +69,12 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         setFocusable(true);
 
         //obstacle code for later
-        obstacles = new ArrayList<>();
-        obstacleFactory = new ObstacleFactory(context, getWidth()); // Adjust ground height
+        //obstacles = new ArrayList<>();
+        obstacleFactory = new ObstacleFactory(context); // Adjust ground height
+        obstaclePool = new ObstaclePool(obstacleFactory);
         lastObstacleSpawnTime = System.currentTimeMillis();
     }
 
-    private void spawnObstacle() {
-        Obstacle obstacle = obstacleFactory.createRandomObstacle(getRightEdgeOfScreen());
-        obstacles.add(obstacle);
-    }
-
-    private void updateObstacles() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastObstacleSpawnTime > OBSTACLE_SPAWN_INTERVAL) {
-            spawnObstacle();
-            lastObstacleSpawnTime = currentTime;
-        }
-
-        Iterator<Obstacle> iterator = obstacles.iterator();
-        while (iterator.hasNext()) {
-            Obstacle obstacle = iterator.next();
-            obstacle.update();
-            if (obstacle.isOffScreen()) {
-                iterator.remove();
-            }
-        }
-    }
-
-    private void drawObstacles(Canvas canvas) {
-        for (Obstacle obstacle : obstacles) {
-            obstacle.draw(canvas);
-        }
-    }
 
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
@@ -115,8 +93,15 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     public void update() {
         hamster.update();
         background.update();
-        updateObstacles();
-        //checkCollisions();
+
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastObstacleSpawnTime > OBSTACLE_SPAWN_INTERVAL) {
+            spawnObstacle();
+            lastObstacleSpawnTime = currentTime;
+        }
+
+        obstaclePool.updateObstacles();
+        // checkCollisions();
     }
 
 
@@ -125,14 +110,14 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-
         background.draw(canvas);
         hamster.draw(canvas);
-
         leftButton.draw(canvas);
         rightButton.draw(canvas);
         jumpButton.draw(canvas);
-        drawObstacles(canvas);
+
+        Log.d("GameViews", "Drawing obstacles");
+        obstaclePool.drawObstacles(canvas);
     }
 
 
@@ -205,6 +190,17 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         //Log.d("GameViews", "PlayerX,Y" + hamster.getPositionX() + " " + hamster.getPositionY());
 
     }
+/*
+    private void spawnObstacle() {
+        Obstacle obstacle = obstacleFactory.createRandomObstacle(getRightEdgeOfScreen());
+        obstacles.add(obstacle);
+    }*/
+private void spawnObstacle() {
+    Obstacle obstacle = obstaclePool.obtainObstacle(getWidth());
+    Log.d("GameViews", "Spawned obstacle at x: " + obstacle.getX() + ", y: " + obstacle.getY());
+}
+
+
 
 
     /*I'm gonna be so real: the game seems to function without saveState or restoreState

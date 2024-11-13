@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
+
+//abstract class as a template for types of obstacles
 public abstract class Obstacle {
     protected Bitmap bitmap;
     protected float x, y;
@@ -17,14 +19,24 @@ public abstract class Obstacle {
     }
 
 
-    public abstract void draw(Canvas canvas);
+    public void draw(Canvas canvas) {
+        if (bitmap != null && !bitmap.isRecycled()) {
+            canvas.drawBitmap(bitmap, x, y, null);
+        }
+    }
 
     public void update() {
-       // x -= speed; // Move to the left
+        x -= speed; // Move to the left
     }
 
     public boolean isOffScreen() {
         return x + bitmap.getWidth() < 0; // Off-screen when completely to the left of the screen
+    }
+
+    public void reset(float rightEdgeOfScreen) {
+        this.x = rightEdgeOfScreen + 50;
+        // Spawn 50 pixels off-screen
+        // Reset any other necessary properties
     }
 
     // Getters for collision detection
