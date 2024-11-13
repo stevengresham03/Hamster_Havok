@@ -42,6 +42,17 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private boolean isPlaying;
     private Thread gameThread;
 
+    private long lastUpdateTime;
+    private static final float MAX_DT = 0.05f; // 50 milliseconds
+
+    private static final float OBSTACLE_SPAWN_INTERVAL_SECONDS = 3.0f; // 3 seconds
+
+    // Add this field to track time since last obstacle spawn
+    private float timeSinceLastObstacleSpawn = 0;
+
+    private static final float GLOBAL_SPEED_MULTIPLIER =2.5f; // Adjust this to change overall game speed
+
+
 
 
     private boolean isGameRunning;
@@ -73,6 +84,11 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         obstacleFactory = new ObstacleFactory(context); // Adjust ground height
         obstaclePool = new ObstaclePool(obstacleFactory);
         lastObstacleSpawnTime = System.currentTimeMillis();
+
+
+        lastUpdateTime = System.nanoTime();
+
+
     }
 
 
@@ -90,18 +106,29 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop.stopLoop();
     }
 
-    public void update() {
-        hamster.update();
-        background.update();
+    public void update(float dt) {
 
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastObstacleSpawnTime > OBSTACLE_SPAWN_INTERVAL) {
+        // Apply the global speed multiplier to dt
+        dt = dt * GLOBAL_SPEED_MULTIPLIER;
+        // Update player with delta time
+
+
+        hamster.update(dt);
+
+        // Update background (if it needs delta time)
+        background.update(dt);
+
+        // Update obstacle spawning
+        timeSinceLastObstacleSpawn += dt;
+        if (timeSinceLastObstacleSpawn >= OBSTACLE_SPAWN_INTERVAL_SECONDS) {
             spawnObstacle();
-            lastObstacleSpawnTime = currentTime;
+            timeSinceLastObstacleSpawn = 0;
         }
 
-        obstaclePool.updateObstacles();
-        // checkCollisions();
+        // Update obstacles with delta time
+        obstaclePool.updateObstacles(dt);
+
+        // checkCollisions(); // Uncomment if you implement this
     }
 
 

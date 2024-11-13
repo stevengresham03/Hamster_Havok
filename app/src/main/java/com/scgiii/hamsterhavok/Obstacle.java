@@ -4,12 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-
 //abstract class as a template for types of obstacles
 public abstract class Obstacle {
     protected Bitmap bitmap;
     protected float x, y;
-    protected float speed;
+    protected float speed; // Now in pixels per second
 
     public Obstacle(Bitmap bitmap, float x, float y, float speed) {
         this.bitmap = bitmap;
@@ -18,15 +17,14 @@ public abstract class Obstacle {
         this.speed = speed;
     }
 
-
     public void draw(Canvas canvas) {
-        if (bitmap != null && !bitmap.isRecycled()) {
+       // if (bitmap != null && !bitmap.isRecycled()) {
             canvas.drawBitmap(bitmap, x, y, null);
-        }
+        //}
     }
 
-    public void update() {
-        x -= speed; // Move to the left
+    public void update(float dt) {
+        x -= speed * dt; // Move to the left, now framerate independent
     }
 
     public boolean isOffScreen() {

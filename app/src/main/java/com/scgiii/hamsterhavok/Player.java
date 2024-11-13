@@ -15,7 +15,7 @@ public class Player extends PlayerObject{
         super(bitmap, x, y);
         this.velocityX = 0;
         this.velocityY = 0;
-        this.gravity = 0.9f;
+        this.gravity = 1000f; // Pixels per second squared, adjust as needed
         this.isJumping = false;
         this.screenHeight = context.getResources().getDisplayMetrics().heightPixels;
         this.screenWidth = context.getResources().getDisplayMetrics().widthPixels;
@@ -26,35 +26,41 @@ public class Player extends PlayerObject{
         canvas.drawBitmap(bitmap, x, y, null);
     }
 
-    public void update() {
-        // Applies gravity to game
-        velocityY += gravity;
+    public void update(float dt) {
+        // Apply gravity
+        velocityY += gravity * dt;
 
+        // Update position
+        x += velocityX * dt;
+        y += velocityY * dt;
 
-        // Updates position
-        x += velocityX;
-        y += velocityY;
-
-        // ground collision
+        // Ground collision
         if (y > screenHeight - bitmap.getHeight()) {
             y = screenHeight - bitmap.getHeight();
             velocityY = 0;
             isJumping = false;
         }
 
-        //screen boundaries
-        if(x < 0) x = 0;
-        if(x > screenWidth - bitmap.getWidth()){
+        // Screen boundaries
+        if (x < 0) x = 0;
+        if (x > screenWidth - bitmap.getWidth()) {
             x = screenWidth - bitmap.getWidth();
         }
     }
 
     public void moveLeft() {
-        velocityX = -10;
+        velocityX = -500; // Pixels per second, adjust as needed
     }
 
     public void moveRight() {
-        velocityX = 10;
+        velocityX = 500; // Pixels per second, adjust as needed
+    }
+
+    public void jump() {
+        if (!isJumping) {
+            velocityY = -1000; // Pixels per second, adjust as needed
+            isJumping = true;
+        }
     }
     //enemy
 /*
@@ -64,14 +70,14 @@ public class Player extends PlayerObject{
                 // Handle collision
             }
         }
-    }*/
+    }
 
     public void jump() {
         if (!isJumping) {
             velocityY = -33; // Adjust jump strength as needed
             isJumping = true;
         }
-    }
+    }*/
 
     public void stopMoving() {
         velocityX = 0;

@@ -8,10 +8,7 @@ public class SmallObstacle extends Obstacle {
         super(bitmap, x, y, speed);
     }
 
-    @Override
-    public void update() {
-        x -= speed;
-    }
+
 
     @Override
     public void draw(Canvas canvas) {

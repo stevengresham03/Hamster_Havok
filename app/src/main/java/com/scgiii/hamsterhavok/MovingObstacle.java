@@ -13,11 +13,7 @@ public class MovingObstacle extends Obstacle {
         this.initialY = y;
     }
 
-    @Override
-    public void update() {
-        x -= speed;
-        y = initialY + (float) (Math.sin(x * frequency) * amplitude);
-    }
+
 
     @Override
     public void draw(Canvas canvas) {

@@ -8,10 +8,7 @@ public class LargeObstacle extends Obstacle {
         super(bitmap, x, y, speed);
     }
 
-    @Override
-    public void update() {
-        x -= speed; // Moves slower due to size
-    }
+
 
     @Override
     public void draw(Canvas canvas) {
