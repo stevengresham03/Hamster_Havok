@@ -21,15 +21,13 @@ public class ObstaclePool {
 
     public Obstacle obtainObstacle(float rightEdgeOfScreen) {
         Obstacle obstacle;
+        if ((inactiveObstacles.isEmpty() || random.nextFloat() < 0.3)) { // 30% chance to create new
 
-        //testing
-        obstacle = factory.createRandomObstacle(rightEdgeOfScreen);
-
-        if (inactiveObstacles.isEmpty() || random.nextFloat() < 0.3) { // 30% chance to create new
             obstacle = factory.createRandomObstacle(rightEdgeOfScreen);
-        } else {
-            obstacle = inactiveObstacles.remove(random.nextInt(inactiveObstacles.size()));
-            factory.resetObstacle(obstacle, rightEdgeOfScreen);
+
+       } else {
+            obstacle = inactiveObstacles.remove(0);
+            //factory.resetObstacle(obstacle, rightEdgeOfScreen);
         }
         activeObstacles.add(obstacle);
         return obstacle;
@@ -58,6 +56,7 @@ public class ObstaclePool {
 
     //draws every obstacle in the "active" list
     public void drawObstacles(Canvas canvas) {
+        //Log.d("Pool", "Drawing obstacles");
         for (Obstacle obstacle : activeObstacles) {
             obstacle.draw(canvas);
         }
