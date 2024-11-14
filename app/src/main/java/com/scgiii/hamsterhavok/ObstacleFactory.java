@@ -4,93 +4,37 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-
-
 import java.util.Random;
 
 public class ObstacleFactory {
-    private Context context;
+    private final Context context;
+    private final Random random;
 
-    private Random random;
-    private int width, height;
-
-    public ObstacleFactory(Context context, float screenWidth) {
+    public ObstacleFactory(Context context) {
         this.context = context;
         this.random = new Random();
     }
 
-    public Obstacle createRandomObstacle(float rightEdgeOfScreen) {
-        int obstacleType = random.nextInt(7); // 0-6 inclusive
-        float speed = Background.scrollSpeed;  //5 + random.nextFloat() * 3; // Random speed between 5 and 8
+    public Obstacle createRandomObstacle(float screenWidth, float screenHeight) {
+        boolean isFalling = random.nextBoolean(); // Randomly decide if the obstacle falls
         Bitmap bitmap;
+        float spawnX = isFalling ? random.nextFloat() * screenWidth : screenWidth + 50; // Spawn above screen for falling
+        float spawnY = isFalling ? -50 : screenHeight - 100; // Off-screen for falling, ground level otherwise
 
-        float spawnX = rightEdgeOfScreen + 50; // Spawn 50 pixels off-screen
-        float spawnY;
-
-
+        int obstacleType = random.nextInt(3); // Select obstacle type
         switch (obstacleType) {
-            //Roomba
             case 0:
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba);
-                width = bitmap.getWidth() / 5;
-                height = bitmap.getHeight() / 5;
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-                //spawnY = groundY - bitmap.getHeight();
-                spawnY = Player.screenHeight - height;
-                return new SmallObstacle(bitmap, spawnX, spawnY, speed);
-            //Clothes
+                break;
             case 1:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.clothes);
-                width = bitmap.getWidth() / 4;
-                height = bitmap.getHeight() / 4;
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-                spawnY = Player.screenHeight - height;
-                return new SmallObstacle(bitmap, spawnX, spawnY, speed);
-            //Cat
-            case 2:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.cat);
-                width = bitmap.getWidth() / 3;
-                height = bitmap.getHeight() / 3;
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-                spawnY = Player.screenHeight - height;
-                return new SmallObstacle(bitmap, spawnX, spawnY, speed);
-            //Baby
-            case 3:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.baby);
-                width = bitmap.getWidth() / 10;
-                height = bitmap.getHeight() / 10;
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-                spawnY = Player.screenHeight - height;
-                return new SmallObstacle(bitmap, spawnX, spawnY, speed);
-            //Books
-            case 4:
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.books);
-                width = bitmap.getWidth() / 8;
-                height = bitmap.getHeight() / 8;
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-                spawnY = Player.screenHeight - height;
-                return new SmallObstacle(bitmap, spawnX, spawnY, speed);
-            //FreakBob
-            case 5:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.freakbob);
-
-                width = bitmap.getWidth() / 5;
-                height = bitmap.getHeight() / 5;
-
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-                spawnY = Player.screenHeight - height;
-                return new LargeObstacle(bitmap, spawnX, spawnY, speed);
-            //player
-            case 6:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.player);
-
-                width = bitmap.getWidth() / 5;
-                height = bitmap.getHeight() / 5;
-                bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
-                spawnY = Player.screenHeight - height;
-                return new LargeObstacle(bitmap, spawnX, spawnY, speed);
+                break;
             default:
-                throw new IllegalStateException("Unexpected obstacle type: " + obstacleType);
+                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.cat);
         }
+
+        bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 8, bitmap.getHeight() / 8, true);
+
+        return new MovingObstacle(bitmap, spawnX, spawnY, isFalling ? 300 : Background.scrollSpeed, isFalling);
     }
 }

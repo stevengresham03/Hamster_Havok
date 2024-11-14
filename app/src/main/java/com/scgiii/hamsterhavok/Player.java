@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class Player extends PlayerObject{
+public class Player extends PlayerObject {
     private float velocityX, velocityY;
     private final float gravity;
     private boolean isJumping;
@@ -66,17 +66,4 @@ public class Player extends PlayerObject{
     public void stopMoving() {
         velocityX = 0;
     }
-
-    public void setPosition(float x, float y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public float getPositionX() {
-        return x;
-    }
-    public float getPositionY() {
-        return y;
-    }
-
 }

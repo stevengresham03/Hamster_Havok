@@ -1,14 +1,12 @@
 package com.scgiii.hamsterhavok;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-//abstract class as a template for types of obstacles
 public abstract class Obstacle {
     protected Bitmap bitmap;
     protected float x, y;
-    protected float speed; // Now in pixels per second
+    protected float speed;
 
     public Obstacle(Bitmap bitmap, float x, float y, float speed) {
         this.bitmap = bitmap;
@@ -18,29 +16,28 @@ public abstract class Obstacle {
     }
 
     public void draw(Canvas canvas) {
-       // if (bitmap != null && !bitmap.isRecycled()) {
-            canvas.drawBitmap(bitmap, x, y, null);
-        //}
+        canvas.drawBitmap(bitmap, x, y, null);
     }
 
-    public void update(float dt) {
-        x -= speed * dt; // Move to the left, now framerate independent
+    public abstract void update(float dt);
+
+    public boolean isOffScreen(float screenHeight) {
+        return y > screenHeight || x + bitmap.getWidth() < 0;
     }
 
-    public boolean isOffScreen() {
-        return x + bitmap.getWidth() < 0; // Off-screen when completely to the left of the screen
+    public float getX() {
+        return x;
     }
 
-    public void reset(float rightEdgeOfScreen) {
-        this.x = rightEdgeOfScreen + 50;
-        // Spawn 50 pixels off-screen
-        // Reset any other necessary properties
+    public float getY() {
+        return y;
     }
 
+    public int getWidth() {
+        return bitmap.getWidth();
+    }
 
-    // Getters for collision detection
-    public float getX() { return x; }
-    public float getY() { return y; }
-    public int getWidth() { return bitmap.getWidth(); }
-    public int getHeight() { return bitmap.getHeight(); }
+    public int getHeight() {
+        return bitmap.getHeight();
+    }
 }

@@ -1,251 +1,198 @@
 package com.scgiii.hamsterhavok;
-import android.annotation.SuppressLint;
+
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.MotionEvent;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import androidx.annotation.NonNull;
+
+import androidx.core.content.res.ResourcesCompat;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
-//Manages all objects in game and is responsible for updating all states and rendering objects to screen.
 public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
+
     private final GameLoop gameLoop;
-    public Background background;
+    private final Background background;
     private final Player hamster;
-
-    private final GameButton leftButton;
-    private final GameButton rightButton;
-    private final GameButton jumpButton;
-
-    private static final float GLOBAL_SPEED_MULTIPLIER = 2.5f; // Adjust this to change overall game speed
-
-
     private final ObstacleFactory obstacleFactory;
     private final List<Obstacle> activeObstacles;
-    private float timeSinceLastSpawn;
-    private float minSpawnInterval = 4.0f; // Minimum time between spawns in seconds
-    private float maxSpawnInterval = 10.0f; // Maximum time between spawns in seconds
-    private float nextSpawnTime;
-    private Random random;
 
-    private boolean isGameRunning;
+    private Paint scorePaint; // Paint for score text
+    private Paint scoreBackgroundPaint; // Paint for score background
+
+    private static final float GLOBAL_SPEED_MULTIPLIER = 2.5f;
+
+    private boolean isPaused = false;
+
+    private int score;
+    private float timeElapsed;
+    private float timeSinceLastSpawn;
+    private final float spawnInterval = 4.0f; // Spawn every 2 seconds
 
     public GameViews(Context context) {
         super(context);
 
-        //getting surface holder and adding callback
         SurfaceHolder surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
 
         gameLoop = new GameLoop(this, surfaceHolder);
         background = new Background(getContext());
-        hamster = new Player(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.player), getWidth(), getHeight());
+        hamster = new Player(
+                getContext(),
+                BitmapFactory.decodeResource(context.getResources(), R.drawable.player),
+                getWidth(),
+                getHeight()
+        );
 
-        //button stuff
-        int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
-        leftButton = new GameButton(100, screenHeight - 250, 300, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.left_button));
-        rightButton = new GameButton(350, screenHeight - 250, 550, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.right_button));
-        jumpButton = new GameButton(screenWidth - 250, screenHeight - 250, screenWidth - 50, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.jump_button));
-
-        //all obstacle stuff
-        //factory is a class that rand generates the obstacles. the activeObstacles lists
-        obstacleFactory = new ObstacleFactory(context, getWidth());
+        obstacleFactory = new ObstacleFactory(context);
         activeObstacles = new ArrayList<>();
-        random = new Random();
-        nextSpawnTime = getRandomSpawnInterval();
 
-        //used to control whether a view can gain focus, which means it can receive input events like key presses/touch events.
-        setFocusable(true);
+        initializeScoreEffects();
     }
 
+    private void initializeScoreEffects() {
+        // Score logic
+        score = 0;
+        timeElapsed = 0;
 
-    //next 3 methods starts and ends the game loop
+        // Paint for the text
+        scorePaint = new Paint();
+        scorePaint.setColor(0xFFFFFFFF); // White text color
+        scorePaint.setTextSize(80); // Larger text size
+        scorePaint.setFakeBoldText(true); // Bold text
+        scorePaint.setShadowLayer(8.0f, 4.0f, 4.0f, 0xFF000000); // Black shadow for depth
+        scorePaint.setTextAlign(Paint.Align.CENTER); // Center-align the text
+        Typeface customFont = ResourcesCompat.getFont(getContext(), R.font.americancapt); // Replace with your font resource
+        if (customFont != null) {
+            scorePaint.setTypeface(customFont);
+        }
+
+        // Paint for the background box
+        scoreBackgroundPaint = new Paint();
+        scoreBackgroundPaint.setColor(0x99000000); // Semi-transparent black
+        scoreBackgroundPaint.setStyle(Paint.Style.FILL);
+        scoreBackgroundPaint.setAntiAlias(true); // Smooth edges
+    }
+
     @Override
-    public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
         gameLoop.startLoop();
     }
 
     @Override
-    public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-    }
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {}
 
     @Override
-    public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         gameLoop.stopLoop();
     }
 
-    //draws everything
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
         background.draw(canvas);
+        hamster.draw(canvas);
 
-        // Draw obstacles
+        // Draw all active obstacles
         for (Obstacle obstacle : activeObstacles) {
             obstacle.draw(canvas);
         }
-        hamster.draw(canvas);
-        leftButton.draw(canvas);
-        rightButton.draw(canvas);
-        jumpButton.draw(canvas);
+
+        drawScore(canvas); // Draw the enhanced score
     }
 
-    //updates and synchonizes with time.deltaTime passed from gameLoop
+    private void drawScore(Canvas canvas) {
+        int screenWidth = getWidth();
+        int padding = 20; // Padding around the score box
+        int boxWidth = 300; // Width of the score box
+        int boxHeight = 120; // Height of the score box
+        int boxX = screenWidth - boxWidth - padding; // X-coordinate of the box
+        int boxY = padding; // Y-coordinate of the box
+
+        // Draw the background box
+        canvas.drawRoundRect(
+                boxX, // Left
+                boxY, // Top
+                boxX + boxWidth, // Right
+                boxY + boxHeight, // Bottom
+                30, // Corner radius X
+                30, // Corner radius Y
+                scoreBackgroundPaint
+        );
+
+        // Draw the score text inside the box
+        String scoreText = "Score: " + score;
+        canvas.drawText(scoreText, boxX + (boxWidth / 2.0f), boxY + (boxHeight / 1.5f), scorePaint);
+    }
+
     public void update(float dt) {
-        // Apply the global speed multiplier to dt
-        dt = dt * GLOBAL_SPEED_MULTIPLIER;
-        // Update player with delta time
+        if (isPaused) return;
+
+        dt *= GLOBAL_SPEED_MULTIPLIER;
+
         hamster.update(dt);
-        // Update background (if it needs delta time)
         background.update(dt);
-        // Update and spawn obstacles
+
+        updateScore(dt);
         updateObstacles(dt);
     }
 
-
-//calculates spawn rate based on intervals set before
-    private float getRandomSpawnInterval() {
-        return minSpawnInterval + random.nextFloat() * (maxSpawnInterval - minSpawnInterval);
+    private void updateScore(float dt) {
+        timeElapsed += dt;
+        if (timeElapsed >= 1.0f) {
+            score++;
+            timeElapsed = 0;
+        }
     }
 
-    private void spawnObstacle() {
-        float rightEdgeOfScreen = getWidth(); // Assuming getWidth() returns the screen width
-        Obstacle newObstacle = obstacleFactory.createRandomObstacle(rightEdgeOfScreen);
-        activeObstacles.add(newObstacle);
-    }
-
-    //goes thru list of obstacles, calls their update methods, removes them when off screen, and spawns new ones
     private void updateObstacles(float dt) {
-        // Update existing obstacles
+        timeSinceLastSpawn += dt;
+
+        // Spawn a new obstacle if the interval has passed
+        if (timeSinceLastSpawn >= spawnInterval) {
+            Obstacle newObstacle = obstacleFactory.createRandomObstacle(getWidth(), getHeight());
+            activeObstacles.add(newObstacle);
+            timeSinceLastSpawn = 0;
+        }
+
+        // Update and remove off-screen obstacles
         Iterator<Obstacle> iterator = activeObstacles.iterator();
         while (iterator.hasNext()) {
             Obstacle obstacle = iterator.next();
             obstacle.update(dt);
-            if (obstacle.isOffScreen()) {
+
+            if (obstacle.isOffScreen(getHeight())) {
                 iterator.remove();
-                // If we implement object pooling:
-                // obstacleFactory.recycleObstacle(obstacle);
             }
         }
-
-        // Spawn new obstacles
-        timeSinceLastSpawn += dt;
-        if (timeSinceLastSpawn >= nextSpawnTime) {
-            spawnObstacle();
-            timeSinceLastSpawn = 0;
-            nextSpawnTime = getRandomSpawnInterval();
-        }
     }
 
-    //two dummy varaibles so game doesn't break before user touches screen
-    private boolean isButtonPressed = false;
-    private int activePointerId = -1;
-
-    //the line directlhy below just gets the IDE to stop bothering me lols. Doesn't cause any errors
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        //gets the action, and where the user has touched
-        int action = event.getActionMasked();
-        int pointerIndex = event.getActionIndex();
-        int pointerId = event.getPointerId(pointerIndex);
-
-
-        //switch case for where the user has touched (if they've touched the buttons)
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:
-                if (leftButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
-                    isButtonPressed = true;
-                    activePointerId = pointerId;
-                    hamster.moveLeft();
-                } else if (rightButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
-                    isButtonPressed = true;
-                    activePointerId = pointerId;
-                    hamster.moveRight();
-                } else if (jumpButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
-
-                    isButtonPressed = true;
-                    //i took this next line out bc it makes the hamster stop moving when jumping
-                    // activePointerId = pointerId;
-                    hamster.jump();
-                }
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                if (isButtonPressed) {
-                    int index = event.findPointerIndex(activePointerId);
-                    if (index != -1) {
-                        float x = event.getX(index);
-                        float y = event.getY(index);
-                        if (!leftButton.contains(x, y) && !rightButton.contains(x, y)) {
-                            // Finger moved outside the move forward or backward buttons
-                            releaseLeftRightButtons();
-                        }
-
-                    }
-                }
-                break;
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (pointerId == activePointerId) {
-                    releaseLeftRightButtons();
-                }
-                break;
-        }
-        return true;
+    public void pauseGame() {
+        isPaused = true;
     }
 
-    private void releaseLeftRightButtons() {
-        isButtonPressed = false;
-        activePointerId = -1;
+    public void resumeGame() {
+        isPaused = false;
+    }
+
+    public void onLeftButtonPressed() {
+        hamster.moveLeft();
+    }
+
+    public void stopMovement() {
         hamster.stopMoving();
-        //Log.d("GameViews", "PlayerX,Y" + hamster.getPositionX() + " " + hamster.getPositionY());
-
     }
 
-    /*I'm gonna be so real: the game seems to function without saveState or restoreState
-    but I'm keeping them here anyways bc they don't seem to mess anything up and we might need them later?
-    But the mainActivity seems to handle the pause/resume by itself with the onResume method
- */
-    public void saveState(Bundle outState) {
-        //outState saves these values with the key (first parameter)
-        outState.putFloat("playerX", hamster.getPositionX());
-        outState.putFloat("playerY", hamster.getPositionY());
-        //outState.putInt("score", score);
-        outState.putFloat("backgroundOffsetX1", background.getOffsetX1());
-        outState.putFloat("backgroundOffsetX2", background.getOffsetX2());
-
-
-        outState.putBoolean("isGameRunning", isGameRunning);
-        // Save any other necessary game state
+    public void onRightButtonPressed() {
+        hamster.moveRight();
     }
 
-    public void restoreState(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            //savedInstanceState pulls the values with the key provided in first parameter, and if not found it will use the 2nd parameter as default value
-            //these variables are for saving the state for resume/pause and opening and closing app
-            float playerX = savedInstanceState.getFloat("playerX", 1240);
-            float playerY = savedInstanceState.getFloat("playerY", 792);
-            float backgroundOffsetX1 = savedInstanceState.getFloat("backgroundOffsetX1", 0);
-            float backgroundOffsetX2 = savedInstanceState.getFloat("backgroundOffsetX2", -1500);
-            hamster.setPosition(playerX, playerY);
-
-            //  score = savedInstanceState.getInt("score", 0);
-            isGameRunning = savedInstanceState.getBoolean("isGameRunning", false);
-            // Restore any other saved game state
-
-        }
+    public void onJumpButtonPressed() {
+        hamster.jump();
     }
 }

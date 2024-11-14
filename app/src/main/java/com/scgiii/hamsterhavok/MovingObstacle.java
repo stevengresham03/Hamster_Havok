@@ -1,22 +1,21 @@
 package com.scgiii.hamsterhavok;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 
 public class MovingObstacle extends Obstacle {
-    private float amplitude = 50;
-    private float frequency = 0.05f;
-    private float initialY;
+    private final boolean isFalling;
 
-    public MovingObstacle(Bitmap bitmap, float x, float y, float speed) {
+    public MovingObstacle(Bitmap bitmap, float x, float y, float speed, boolean isFalling) {
         super(bitmap, x, y, speed);
-        this.initialY = y;
+        this.isFalling = isFalling;
     }
 
-
-
     @Override
-    public void draw(Canvas canvas) {
-        canvas.drawBitmap(bitmap, x, y, null);
+    public void update(float dt) {
+        if (isFalling) {
+            y += speed * dt; // Move downward
+        } else {
+            x -= speed * dt; // Move left
+        }
     }
 }

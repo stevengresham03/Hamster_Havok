@@ -8,7 +8,10 @@ public abstract class PlayerObject {
     protected float x;
     protected float y;
 
-    public PlayerObject(Bitmap bitmap, float x, float y){
+    public PlayerObject(Bitmap bitmap, float x, float y) {
+        if (bitmap == null) {
+            throw new IllegalArgumentException("Bitmap cannot be null");
+        }
         int width = bitmap.getWidth() / 5;
         int height = bitmap.getHeight() / 5;
         this.bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
