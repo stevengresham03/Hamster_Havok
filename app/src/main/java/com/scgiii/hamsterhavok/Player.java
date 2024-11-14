@@ -15,7 +15,7 @@ public class Player extends PlayerObject{
         super(bitmap, x, y);
         this.velocityX = 0;
         this.velocityY = 0;
-        this.gravity = 1000f; // Pixels per second squared, adjust as needed
+        this.gravity = 1500f; // Pixels per second squared, adjust as needed
         this.isJumping = false;
         this.screenHeight = context.getResources().getDisplayMetrics().heightPixels;
         this.screenWidth = context.getResources().getDisplayMetrics().widthPixels;
@@ -58,26 +58,10 @@ public class Player extends PlayerObject{
 
     public void jump() {
         if (!isJumping) {
-            velocityY = -1000; // Pixels per second, adjust as needed
+            velocityY = -1500; // Pixels per second, adjust as needed
             isJumping = true;
         }
     }
-    //enemy
-/*
-    private void checkCollisions(List<GameObject> gameObjects) {
-        for (GameObject obj : gameObjects) {
-            if (this.getBounds().intersect(obj.getBounds())) {
-                // Handle collision
-            }
-        }
-    }
-
-    public void jump() {
-        if (!isJumping) {
-            velocityY = -33; // Adjust jump strength as needed
-            isJumping = true;
-        }
-    }*/
 
     public void stopMoving() {
         velocityX = 0;

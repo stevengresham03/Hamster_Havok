@@ -1,5 +1,4 @@
 package com.scgiii.hamsterhavok;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.BitmapFactory;
@@ -10,7 +9,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import androidx.annotation.NonNull;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,19 +24,14 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private final GameButton rightButton;
     private final GameButton jumpButton;
 
-    private static final float OBSTACLE_SPAWN_INTERVAL_SECONDS = 3.0f; // 3 seconds
-
-    // Add this field to track time since last obstacle spawn
-    private float timeSinceLastObstacleSpawn = 0;
-
     private static final float GLOBAL_SPEED_MULTIPLIER = 2.5f; // Adjust this to change overall game speed
 
 
-    private ObstacleFactory obstacleFactory;
-    private List<Obstacle> activeObstacles;
+    private final ObstacleFactory obstacleFactory;
+    private final List<Obstacle> activeObstacles;
     private float timeSinceLastSpawn;
-    private float minSpawnInterval = 1.5f; // Minimum time between spawns in seconds
-    private float maxSpawnInterval = 3.0f; // Maximum time between spawns in seconds
+    private float minSpawnInterval = 4.0f; // Minimum time between spawns in seconds
+    private float maxSpawnInterval = 10.0f; // Maximum time between spawns in seconds
     private float nextSpawnTime;
     private Random random;
 
@@ -55,30 +48,26 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         background = new Background(getContext());
         hamster = new Player(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.player), getWidth(), getHeight());
 
+        //button stuff
         int screenWidth = getResources().getDisplayMetrics().widthPixels;
         int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        leftButton = new GameButton(100, screenHeight - 250, 300, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.left_button));
+        rightButton = new GameButton(350, screenHeight - 250, 550, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.right_button));
+        jumpButton = new GameButton(screenWidth - 250, screenHeight - 250, screenWidth - 50, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.jump_button));
 
-        leftButton = new GameButton(50, screenHeight - 150, 250, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.left_button));
-        rightButton = new GameButton(300, screenHeight - 150, 500, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.right_button));
-        jumpButton = new GameButton(screenWidth - 250, screenHeight - 150, screenWidth - 50, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.jump_button));
-        //used to control whether a view can gain focus, which means it can receive input events like key presses/touch events.
-        setFocusable(true);
-
+        //all obstacle stuff
+        //factory is a class that rand generates the obstacles. the activeObstacles lists
         obstacleFactory = new ObstacleFactory(context, getWidth());
         activeObstacles = new ArrayList<>();
         random = new Random();
         nextSpawnTime = getRandomSpawnInterval();
 
-
-
-
+        //used to control whether a view can gain focus, which means it can receive input events like key presses/touch events.
+        setFocusable(true);
     }
 
 
-    private float getRandomSpawnInterval() {
-        return minSpawnInterval + random.nextFloat() * (maxSpawnInterval - minSpawnInterval);
-    }
-
+    //next 3 methods starts and ends the game loop
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
         gameLoop.startLoop();
@@ -93,60 +82,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         gameLoop.stopLoop();
     }
 
-    public void update(float dt) {
-
-        // Apply the global speed multiplier to dt
-        dt = dt * GLOBAL_SPEED_MULTIPLIER;
-        // Update player with delta time
-        hamster.update(dt);
-        // Update background (if it needs delta time)
-        background.update(dt);
-
-        // Update and spawn obstacles
-        updateObstacles(dt);
-
-    }
-
-
-    private void updateObstacles(float dt) {
-        // Update existing obstacles
-        Iterator<Obstacle> iterator = activeObstacles.iterator();
-        while (iterator.hasNext()) {
-            Obstacle obstacle = iterator.next();
-            obstacle.update(dt);
-            if (obstacle.isOffScreen()) {
-                iterator.remove();
-                // If you implement object pooling:
-                // obstacleFactory.recycleObstacle(obstacle);
-            }
-        }
-
-        // Spawn new obstacles
-        timeSinceLastSpawn += dt;
-        if (timeSinceLastSpawn >= nextSpawnTime) {
-            spawnObstacle();
-            timeSinceLastSpawn = 0;
-            nextSpawnTime = getRandomSpawnInterval();
-        }
-    }
-
-    private void spawnObstacle() {
-        float rightEdgeOfScreen = getWidth(); // Assuming getWidth() returns the screen width
-        Obstacle newObstacle = obstacleFactory.createRandomObstacle(rightEdgeOfScreen);
-        activeObstacles.add(newObstacle);
-    }
-/*
-    private void checkCollisions() {
-        for (Obstacle obstacle : activeObstacles) {
-            if (obstacle.collidesWith(hamster)) {
-                // Handle collision (e.g., end game, reduce health, etc.)
-                // For now, let's just log it
-                Log.d("GameViews", "Collision detected with obstacle!");
-            }
-        }
-    }*/
-
-
+    //draws everything
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
@@ -160,16 +96,54 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         leftButton.draw(canvas);
         rightButton.draw(canvas);
         jumpButton.draw(canvas);
-
     }
-/*
-    public boolean collidesWith(Player player) {
-        return x < player.getPositionX() + player.getWidth() &&
-                x + getWidth() > player.getPositionX() &&
-                y < player.getPositionY() + player.getHeight() &&
-                y + getHeight() > player.getPositionY();
-    }*/
 
+    //updates and synchonizes with time.deltaTime passed from gameLoop
+    public void update(float dt) {
+        // Apply the global speed multiplier to dt
+        dt = dt * GLOBAL_SPEED_MULTIPLIER;
+        // Update player with delta time
+        hamster.update(dt);
+        // Update background (if it needs delta time)
+        background.update(dt);
+        // Update and spawn obstacles
+        updateObstacles(dt);
+    }
+
+
+//calculates spawn rate based on intervals set before
+    private float getRandomSpawnInterval() {
+        return minSpawnInterval + random.nextFloat() * (maxSpawnInterval - minSpawnInterval);
+    }
+
+    private void spawnObstacle() {
+        float rightEdgeOfScreen = getWidth(); // Assuming getWidth() returns the screen width
+        Obstacle newObstacle = obstacleFactory.createRandomObstacle(rightEdgeOfScreen);
+        activeObstacles.add(newObstacle);
+    }
+
+    //goes thru list of obstacles, calls their update methods, removes them when off screen, and spawns new ones
+    private void updateObstacles(float dt) {
+        // Update existing obstacles
+        Iterator<Obstacle> iterator = activeObstacles.iterator();
+        while (iterator.hasNext()) {
+            Obstacle obstacle = iterator.next();
+            obstacle.update(dt);
+            if (obstacle.isOffScreen()) {
+                iterator.remove();
+                // If we implement object pooling:
+                // obstacleFactory.recycleObstacle(obstacle);
+            }
+        }
+
+        // Spawn new obstacles
+        timeSinceLastSpawn += dt;
+        if (timeSinceLastSpawn >= nextSpawnTime) {
+            spawnObstacle();
+            timeSinceLastSpawn = 0;
+            nextSpawnTime = getRandomSpawnInterval();
+        }
+    }
 
     //two dummy varaibles so game doesn't break before user touches screen
     private boolean isButtonPressed = false;

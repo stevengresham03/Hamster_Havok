@@ -1,4 +1,24 @@
+/*
+
+
+
+
+
+The idea of this class was to better manage and recycle our bitmaps. Was too hard to implememt though; kept getting errors.
+Anyone is welcome to try again tho- Steven
+
+
+
+
+
+
+
+
+
+
+
 package com.scgiii.hamsterhavok;
+
 
 import android.graphics.Canvas;
 import android.util.Log;
@@ -14,6 +34,8 @@ public class ObstaclePool {
     private List<Obstacle> inactiveObstacles = new ArrayList<>();
     private ObstacleFactory factory;
     private Random random = new Random();
+
+    private static final int MAX_POOL_SIZE = 20;
 
     public ObstaclePool(ObstacleFactory factory) {
         this.factory = factory;
@@ -36,7 +58,9 @@ public class ObstaclePool {
     //recycling just removes an obstacle from the active list and places it in the inactive to be called upon later
     public void recycleObstacle(Obstacle obstacle) {
         activeObstacles.remove(obstacle);
-        inactiveObstacles.add(obstacle);
+        if (inactiveObstacles.size() < MAX_POOL_SIZE) {
+            inactiveObstacles.add(obstacle);
+        }
     }
 
     //update is constantly running and going through list of active obstacles
@@ -62,6 +86,15 @@ public class ObstaclePool {
         }
     }
 
+    public void prewarmPool(int count, float rightEdgeOfScreen) {
+        for (int i = 0; i < count; i++) {
+            inactiveObstacles.add(factory.createRandomObstacle(rightEdgeOfScreen));
+        }
+    }
+
+
+
+
     // ... other methods if needed ...
 
     /*public boolean checkCollision(Player player) {
@@ -71,5 +104,5 @@ public class ObstaclePool {
             }
         }
         return false;
-    }*/
-}
+    }
+}*/

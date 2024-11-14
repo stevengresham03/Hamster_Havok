@@ -41,8 +41,8 @@ public class ObstacleFactory {
             //Clothes
             case 1:
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.clothes);
-                width = bitmap.getWidth() / 7;
-                height = bitmap.getHeight() / 7;
+                width = bitmap.getWidth() / 4;
+                height = bitmap.getHeight() / 4;
                 bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
                 spawnY = Player.screenHeight - height;
                 return new SmallObstacle(bitmap, spawnX, spawnY, speed);

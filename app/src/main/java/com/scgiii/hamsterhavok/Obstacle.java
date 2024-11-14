@@ -37,6 +37,7 @@ public abstract class Obstacle {
         // Reset any other necessary properties
     }
 
+
     // Getters for collision detection
     public float getX() { return x; }
     public float getY() { return y; }
