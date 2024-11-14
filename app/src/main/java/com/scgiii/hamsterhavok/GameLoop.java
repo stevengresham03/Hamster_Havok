@@ -11,6 +11,9 @@ public class GameLoop extends Thread {
     private static final double MAX_UPS = 70.0;
     private static final double UPS_PERIOD = 1E+3/MAX_UPS;
 
+    // New variables for delta time
+    private long lastUpdateTime;
+    private static final float MAX_DT = 0.05f; // 50 milliseconds
 
     public GameLoop(GameViews gameViews, SurfaceHolder surfaceHolder){
         this.surfaceHolder = surfaceHolder;
@@ -19,6 +22,7 @@ public class GameLoop extends Thread {
 
     public void startLoop() {
         isRunning = true;
+        lastUpdateTime = System.nanoTime(); // Initialize lastUpdateTime
         start();
     }
 
@@ -70,6 +74,12 @@ public class GameLoop extends Thread {
                     }
                 }
             }
+
+            // Calculate delta time
+            long now = System.nanoTime();
+            float dt = Math.min((now - lastUpdateTime) / 1_000_000_000f, MAX_DT);
+            lastUpdateTime = now;
+
             //is it better to initialize canvas here or before while loop????????????
             Canvas canvas = null;
             try {
@@ -77,7 +87,7 @@ public class GameLoop extends Thread {
                 canvas = surfaceHolder.lockCanvas();
                 //stops multiple threads from calling update and draw methods of this surfaceHolder at same time as this thread
                 synchronized (surfaceHolder) {
-                    gameViews.update();
+                    gameViews.update(dt); // Pass dt to update method
                     gameViews.draw(canvas);
                     updateCount++;
                 }
@@ -94,7 +104,6 @@ public class GameLoop extends Thread {
                 }
             }
 
-
             //Pause game loop to not exceed target UPS
             elapsedTime = System.currentTimeMillis() - startTime;
             sleepTime = (long)(updateCount * UPS_PERIOD - elapsedTime);
@@ -102,21 +111,17 @@ public class GameLoop extends Thread {
                 try {
                     sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
 
             //skipping frames to keep up with target UPS (not sure why)
-            if(sleepTime > 0 && updateCount < MAX_UPS - 1){
-                gameViews.update();
+            while(sleepTime < 0 && updateCount < MAX_UPS - 1){
+                gameViews.update(dt); // Pass dt here as well
                 updateCount++;
                 elapsedTime = System.currentTimeMillis() - startTime;
                 sleepTime = (long)(updateCount * UPS_PERIOD - elapsedTime);
-
             }
-
         }
     }
-
-
 }

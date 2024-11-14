@@ -11,20 +11,19 @@ import android.view.WindowManager;
 public class Background {
     private final Bitmap bitmap;
     private float offsetX1, offsetX2;
-    private float scrollSpeed;
+    public static float scrollSpeed;
     static int SCREEN_WIDTH, SCREEN_HEIGHT;
     private final Context context;
     private int screenHeight;
-
-
 
     public Background(Context context) {
         this.context = context;
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.background);
         offsetX1 = 0;
         offsetX2 = bitmap.getWidth();
-        scrollSpeed = 5;
+        scrollSpeed = 300; // Pixels per second, adjusted from 5 pixels per frame
     }
+
     public float getOffsetX1(){
         return offsetX1;
     }
@@ -33,23 +32,20 @@ public class Background {
         return offsetX2;
     }
 
-
-
     public void getScreenDimensions() {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(displayMetrics);
         screenHeight = displayMetrics.heightPixels;
 
-
         // Use screenHeight and screenWidth as needed
     }
 
-    public void update() {
+    public void update(float dt) {
         //background moves left or right depending on action of hamster
-        scrollSpeed = 5;
-        offsetX1 -= scrollSpeed;
-        offsetX2 -= scrollSpeed;
+        scrollSpeed = 300; // Pixels per second
+        offsetX1 -= scrollSpeed * dt;
+        offsetX2 -= scrollSpeed * dt;
 
         // Reset positions if out of bounds
         if (offsetX1 <= -bitmap.getWidth()) {
@@ -67,10 +63,10 @@ public class Background {
 
     public void draw(Canvas canvas) {
         getScreenDimensions();
-       // Log.d("background","screen height: " + screenHeight );
+        // Log.d("background","screen height: " + screenHeight );
         double tempHeight = screenHeight * .5;
         screenHeight = (int) Math.floor(tempHeight);
-        Log.d("background","offset2: " + offsetX2);
+       // Log.d("background","offset2: " + offsetX2);
 
         canvas.drawBitmap(bitmap, offsetX1, -screenHeight, null);
         canvas.drawBitmap(bitmap, offsetX2, -screenHeight, null);
@@ -89,5 +85,4 @@ public class Background {
     public int getBackgroundHeight(){
         return bitmap.getHeight();
     }
-
 }
