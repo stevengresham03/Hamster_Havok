@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Hamster Havok!</string>
+    <string name="music_toggle_label">Music</string>
+    <string name="game_instructions">Run away from the roomba and survive the chaos...</string>
+    <string name="settings">Settings for the game</string>
+    <string name="instruction_title">How To Play the Game!</string>
+    <string name="start">Start here</string>
+
 </resources>
