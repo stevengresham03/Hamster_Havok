@@ -1,4 +1,4 @@
-package com.scgiii.hamsterhavok;
+package com.scgiii.hamsterhavok.GameObject;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -66,4 +66,13 @@ public class Player extends PlayerObject {
     public void stopMoving() {
         velocityX = 0;
     }
+
+    public boolean isColliding(float obstacleX, float roombaY, float obstacleWidth, float obstacleHeight) {
+        //does this even work??? haven't tested...
+        return x < obstacleX + obstacleWidth &&
+                x + width > obstacleX &&
+                y < roombaY + obstacleHeight &&
+                y + height > roombaY;
+    }
+
 }

@@ -1,8 +1,11 @@
-package com.scgiii.hamsterhavok;
+package com.scgiii.hamsterhavok.GameObject;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import com.scgiii.hamsterhavok.Background;
+import com.scgiii.hamsterhavok.R;
 
 import java.util.Random;
 

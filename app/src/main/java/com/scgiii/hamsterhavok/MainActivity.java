@@ -1,17 +1,22 @@
 package com.scgiii.hamsterhavok;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
     private GameViews gameViews;
     private View pauseOverlay;
+    private View deathOverlay;
     private boolean isPauseOverlayAdded = false;
+    //private FrameLayout gameContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,12 +26,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initialize GameViews and add it to the main container
-        gameViews = new GameViews(this);
+        gameViews = new GameViews( this,this);
         FrameLayout gameContainer = findViewById(R.id.mainContainer);
         gameContainer.addView(gameViews, 0); // Add GameViews behind all UI elements
 
-        // Initialize pause overlay
+        // Initialize pause & death overlay
         initializePauseOverlay();
+        initializeDeathOverlay();
 
         // Initialize button logic
         setupButtons();
@@ -115,4 +121,65 @@ public class MainActivity extends AppCompatActivity {
             gameViews.pauseGame();
         }
     }
+
+
+
+
+    public void playerDeath(int finalScore) {
+        Log.d("MainActivity", "playerDeath() called.");
+        runOnUiThread(() -> {
+            showDeathScreen(finalScore);
+        });
+    }
+
+    private void initializeDeathOverlay() {
+        if (deathOverlay == null) {
+            deathOverlay = getLayoutInflater().inflate(R.layout.death_screen, null);
+
+            // Set up the restart button logic
+            View restartButton = deathOverlay.findViewById(R.id.restartButton);
+            restartButton.setOnClickListener(v -> restartGame());
+
+            // Set up the exit button logic
+            View exitButton = deathOverlay.findViewById(R.id.exitButton);
+            exitButton.setOnClickListener(v -> finish());
+
+            // Add the pause overlay to the main container
+            FrameLayout gameContainer = findViewById(R.id.mainContainer);
+            gameContainer.addView(deathOverlay);
+
+            // Initially hide the death overlay
+            deathOverlay.setVisibility(View.GONE);
+        }
+    }
+
+
+    private void showDeathScreen(int finalScore) {
+        Log.d("MainActivity", "Showing death screen.");
+        if (deathOverlay == null) {
+            initializeDeathOverlay();
+        }
+        TextView finalScoreText = deathOverlay.findViewById(R.id.finalScoreText);
+        finalScoreText.setText("Final Score: " + finalScore);
+        deathOverlay.setVisibility(View.VISIBLE);
+        //gameViews.pauseGame();
+    }
+
+    private void restartGame() {
+        if (deathOverlay != null) {
+            deathOverlay.setVisibility(View.GONE);
+        }
+        // Remove the old GameViews
+        FrameLayout gameContainer = findViewById(R.id.mainContainer);
+        gameContainer.removeView(gameViews);
+
+        // Create and add a new GameViews
+        gameViews = new GameViews(this,this);
+        gameContainer.addView(gameViews, 0);
+
+        // Resume the game
+        gameViews.resumeGame();
+    }
+
+
 }

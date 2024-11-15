@@ -1,4 +1,4 @@
-package com.scgiii.hamsterhavok;
+package com.scgiii.hamsterhavok.GameObject;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

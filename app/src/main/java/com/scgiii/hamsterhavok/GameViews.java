@@ -5,17 +5,22 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.core.content.res.ResourcesCompat;
+
+import com.scgiii.hamsterhavok.GameObject.Obstacle;
+import com.scgiii.hamsterhavok.GameObject.ObstacleFactory;
+import com.scgiii.hamsterhavok.GameObject.Player;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
-
+    private final MainActivity mainActivity;
     private final GameLoop gameLoop;
     private final Background background;
     private final Player hamster;
@@ -34,12 +39,13 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private float timeSinceLastSpawn;
     private final float spawnInterval = 4.0f; // Spawn every 2 seconds
 
-    public GameViews(Context context) {
+    public GameViews(MainActivity activity, Context context) {
         super(context);
 
         SurfaceHolder surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
 
+        this.mainActivity = activity;
         gameLoop = new GameLoop(this, surfaceHolder);
         background = new Background(getContext());
         hamster = new Player(
@@ -169,7 +175,21 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
             if (obstacle.isOffScreen(getHeight())) {
                 iterator.remove();
             }
+
+            if (hamster.isColliding(obstacle.getX(), obstacle.getY(), obstacle.getWidth(), obstacle.getHeight())) {
+                // Handle player death. whatever that may entail
+                handlePlayerDeath();
+            }
         }
+    }
+
+
+    public void handlePlayerDeath() {
+        mainActivity.playerDeath(score);
+        pauseGame();
+        //gameLoop.pauseLoop(); ISSUE HERE
+
+
     }
 
     public void pauseGame() {
