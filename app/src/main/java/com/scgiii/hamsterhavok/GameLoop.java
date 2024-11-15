@@ -4,96 +4,102 @@ import android.graphics.Canvas;
 import android.view.SurfaceHolder;
 
 public class GameLoop extends Thread {
-    private SurfaceHolder surfaceHolder;
-    private GameViews gameViews;
+    private final SurfaceHolder surfaceHolder;
+    private final GameViews gameViews;
 
     private boolean isRunning = false;
     private static final double MAX_UPS = 70.0;
-    private static final double UPS_PERIOD = 1E+3/MAX_UPS;
+    private static final double UPS_PERIOD = 1E+3 / MAX_UPS;
 
+    // Delta time variables
+    private long lastUpdateTime;
+    private static final float MAX_DT = 0.05f; // 50 milliseconds
 
-    public GameLoop(GameViews gameViews, SurfaceHolder surfaceHolder){
+    private boolean isPaused = false;
+
+    public GameLoop(GameViews gameViews, SurfaceHolder surfaceHolder) {
         this.surfaceHolder = surfaceHolder;
         this.gameViews = gameViews;
     }
 
     public void startLoop() {
         isRunning = true;
+        lastUpdateTime = System.nanoTime(); // Initialize lastUpdateTime
         start();
     }
 
     public void stopLoop() {
         isRunning = false;
-        try{
+        try {
             join();
-        }
-        catch(InterruptedException e){
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    //this is the actual gameloop
+    public void pauseLoop() {
+        isPaused = true;
+    }
+
+    public void resumeLoop() {
+        isPaused = false;
+        synchronized (this) {
+            this.notify();
+        }
+    }
+
     @Override
-    public void run(){
+    public void run() {
         super.run();
 
-        //declaring time and cycle count variables
-        int updateCount = 0;
-        int frameCount = 0;
-        long startTime;
-        long elapsedTime;
-        long sleepTime;
+        long startTime = System.currentTimeMillis();
+        while (isRunning) {
+            if (isPaused) {
+                synchronized (this) {
+                    try {
+                        this.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
-        startTime = System.currentTimeMillis();
-        //this while loop is the GameLoop (constantly repeats while isRunning=true)
-        while(isRunning){
-            //is it better to initialize canvas here or before while loop????????????
+            // Calculate delta time
+            long now = System.nanoTime();
+            float dt = Math.min((now - lastUpdateTime) / 1_000_000_000f, MAX_DT);
+            lastUpdateTime = now;
+
             Canvas canvas = null;
             try {
-                //locking canvas to draw bitmap
                 canvas = surfaceHolder.lockCanvas();
-                //stops multiple threads from calling update and draw methods of this surfaceHolder at same time as this thread
                 synchronized (surfaceHolder) {
-                    gameViews.update();
+                    gameViews.update(dt); // Pass dt to update method
                     gameViews.draw(canvas);
-                    updateCount++;
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-            }finally{
-                if(canvas != null){
+            } finally {
+                if (canvas != null) {
                     try {
                         surfaceHolder.unlockCanvasAndPost(canvas);
-                        frameCount++;
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
 
+            // Control the frame rate to stay within MAX_UPS
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            long sleepTime = (long) (UPS_PERIOD - elapsedTime);
 
-            //Pause game loop to not exceed target UPS
-            elapsedTime = System.currentTimeMillis() - startTime;
-            sleepTime = (long)(updateCount * UPS_PERIOD - elapsedTime);
-            if(sleepTime > 0){
+            if (sleepTime > 0) {
                 try {
                     sleep(sleepTime);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
-
-            //skipping frames to keep up with target UPS (not sure why)
-            if(sleepTime > 0 && updateCount < MAX_UPS - 1){
-                gameViews.update();
-                updateCount++;
-                elapsedTime = System.currentTimeMillis() - startTime;
-                sleepTime = (long)(updateCount * UPS_PERIOD - elapsedTime);
-
-            }
-
+            startTime = System.currentTimeMillis();
         }
     }
-
-
 }

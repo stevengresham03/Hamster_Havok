@@ -7,10 +7,17 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 
 public class MainActivity extends AppCompatActivity {
     //The MediaaPlayer instance is for the background music
@@ -18,18 +25,39 @@ public class MainActivity extends AppCompatActivity {
     //Broadcast receiver so that changes to the music setting are noted
     private BroadcastReceiver musicSettingReceiver;
 
+    private GameViews gameViews;
+    private View pauseOverlay;
+    private View deathOverlay;
+    private boolean isPauseOverlayAdded = false;
+    //private FrameLayout gameContainer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(new GameViews(this));
 
-        /*
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        // Set the main layout
+        setContentView(R.layout.activity_main);
+
+        // Initialize GameViews and add it to the main container
+        gameViews = new GameViews( this,this);
+        FrameLayout gameContainer = findViewById(R.id.mainContainer);
+        gameContainer.addView(gameViews, 0); // Add GameViews behind all UI elements
+
+        // Initialize pause & death overlay
+        initializePauseOverlay();
+        initializeDeathOverlay();
+
+        // Initialize button logic
+        setupButtons();
+    }
+
+    private void setupButtons() {
+        // Pause button logic
+        ImageButton pauseButton = findViewById(R.id.pauseButton);
+        pauseButton.setOnClickListener(v -> {
+            showPauseScreen(); // Call the method to show the pause overlay
         });
+
 
          */
         //Initializing the mediaplayer
@@ -59,26 +87,8 @@ public class MainActivity extends AppCompatActivity {
         };
         LocalBroadcastManager.getInstance(this).registerReceiver(musicSettingReceiver, new IntentFilter("music_setting_changed"));
     }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-        //resumes music if it's not playing
-        SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
-        boolean musicOn = preferences.getBoolean("music_on", true);
-        if (musicOn && !mediaPlayer.isPlaying()){
-            mediaPlayer.start();
-        }
     }
 
-    @Override
-    protected void onPause(){
-        super.onPause();
-        //pauses music when app paused
-        if (mediaPlayer.isPlaying()){
-            mediaPlayer.pause();
-        }
-    }
 
     @Override
     protected void onDestroy(){
@@ -86,6 +96,154 @@ public class MainActivity extends AppCompatActivity {
         if (mediaPlayer != null){ //yarg hrow
             mediaPlayer.release();
             mediaPlayer = null;
+          
+        // Left button logic
+        ImageButton leftButton = findViewById(R.id.leftButton);
+        leftButton.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                gameViews.onLeftButtonPressed();
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                gameViews.stopMovement();
+            }
+            return true;
+        });
+
+        // Right button logic
+        ImageButton rightButton = findViewById(R.id.rightButton);
+        rightButton.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                gameViews.onRightButtonPressed();
+            } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                gameViews.stopMovement();
+            }
+            return true;
+        });
+
+        // Jump button logic
+        ImageButton jumpButton = findViewById(R.id.jumpButton);
+        jumpButton.setOnClickListener(v -> gameViews.onJumpButtonPressed());
+    }
+
+
+    private void initializePauseOverlay() {
+        if (pauseOverlay == null) {
+            // Inflate the pause screen layout
+            pauseOverlay = getLayoutInflater().inflate(R.layout.pause_screen, null);
+
+            // Set up the resume button logic
+            View resumeButton = pauseOverlay.findViewById(R.id.resumeButton);
+            resumeButton.setOnClickListener(v -> hidePauseScreen());
+
+            // Add the pause overlay to the main container
+            FrameLayout gameContainer = findViewById(R.id.mainContainer);
+            gameContainer.addView(pauseOverlay);
+
+            // Initially hide the pause overlay
+            pauseOverlay.setVisibility(View.GONE);
         }
     }
+
+
+    private void showPauseScreen() {
+        if (pauseOverlay != null) {
+            pauseOverlay.setVisibility(View.VISIBLE);
+        }
+        gameViews.pauseGame();
+    }
+
+    private void hidePauseScreen() {
+        if (pauseOverlay != null) {
+            pauseOverlay.setVisibility(View.GONE);
+        }
+        gameViews.resumeGame();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (gameViews != null) {
+            gameViews.resumeGame();
+           //resumes music if it's not playing
+        SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
+        boolean musicOn = preferences.getBoolean("music_on", true);
+        if (musicOn && !mediaPlayer.isPlaying()){
+            mediaPlayer.start();
+        }
+
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (gameViews != null) {
+            gameViews.pauseGame();
+        }
+      //pauses music when app paused
+       if (mediaPlayer.isPlaying()){
+         
+            mediaPlayer.pause();
+        }
+    }
+
+
+
+
+    public void playerDeath(int finalScore) {
+        Log.d("MainActivity", "playerDeath() called.");
+        runOnUiThread(() -> {
+            showDeathScreen(finalScore);
+        });
+    }
+
+    private void initializeDeathOverlay() {
+        if (deathOverlay == null) {
+            deathOverlay = getLayoutInflater().inflate(R.layout.death_screen, null);
+
+            // Set up the restart button logic
+            View restartButton = deathOverlay.findViewById(R.id.restartButton);
+            restartButton.setOnClickListener(v -> restartGame());
+
+            // Set up the exit button logic
+            View exitButton = deathOverlay.findViewById(R.id.exitButton);
+            exitButton.setOnClickListener(v -> finish());
+
+            // Add the pause overlay to the main container
+            FrameLayout gameContainer = findViewById(R.id.mainContainer);
+            gameContainer.addView(deathOverlay);
+
+            // Initially hide the death overlay
+            deathOverlay.setVisibility(View.GONE);
+        }
+    }
+
+
+    private void showDeathScreen(int finalScore) {
+        Log.d("MainActivity", "Showing death screen.");
+        if (deathOverlay == null) {
+            initializeDeathOverlay();
+        }
+        TextView finalScoreText = deathOverlay.findViewById(R.id.finalScoreText);
+        finalScoreText.setText("Final Score: " + finalScore);
+        deathOverlay.setVisibility(View.VISIBLE);
+        //gameViews.pauseGame();
+    }
+
+    private void restartGame() {
+        if (deathOverlay != null) {
+            deathOverlay.setVisibility(View.GONE);
+        }
+        // Remove the old GameViews
+        FrameLayout gameContainer = findViewById(R.id.mainContainer);
+        gameContainer.removeView(gameViews);
+
+        // Create and add a new GameViews
+        gameViews = new GameViews(this,this);
+        gameContainer.addView(gameViews, 0);
+
+        // Resume the game
+        gameViews.resumeGame();
+    }
+
+
 }

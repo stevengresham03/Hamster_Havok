@@ -1,201 +1,218 @@
 package com.scgiii.hamsterhavok;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.graphics.Rect;
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 
-//Manages all objects in game and is responsible for updating all states and rendering objects to screen.
+import androidx.core.content.res.ResourcesCompat;
+
+import com.scgiii.hamsterhavok.GameObject.Obstacle;
+import com.scgiii.hamsterhavok.GameObject.ObstacleFactory;
+import com.scgiii.hamsterhavok.GameObject.Player;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
+    private final MainActivity mainActivity;
     private final GameLoop gameLoop;
-    public Background background;
+    private final Background background;
     private final Player hamster;
-    private final Roomba roomba;
-    private final GameButton leftButton;
-    private final GameButton rightButton;
-    private final GameButton jumpButton;
+    private final ObstacleFactory obstacleFactory;
+    private final List<Obstacle> activeObstacles;
 
-    public GameViews(Context context) {
+    private Paint scorePaint; // Paint for score text
+    private Paint scoreBackgroundPaint; // Paint for score background
+
+    private static final float GLOBAL_SPEED_MULTIPLIER = 2.5f;
+
+    private boolean isPaused = false;
+
+    private int score;
+    private float timeElapsed;
+    private float timeSinceLastSpawn;
+    private final float spawnInterval = 4.0f; // Spawn every 2 seconds
+
+    public GameViews(MainActivity activity, Context context) {
         super(context);
 
-        //getting surface holder and adding callback
         SurfaceHolder surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
 
+        this.mainActivity = activity;
         gameLoop = new GameLoop(this, surfaceHolder);
         background = new Background(getContext());
-        hamster = new Player(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.player), 900, 724);
-        roomba = new Roomba(getContext(), BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba), 0,900);
+        hamster = new Player(
+                getContext(),
+                BitmapFactory.decodeResource(context.getResources(), R.drawable.player),
+                getWidth(),
+                getHeight()
+        );
 
-        int buttonWidth = 200;
-        int buttonHeight = 100;
-        int screenWidth = getResources().getDisplayMetrics().widthPixels;
-        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        obstacleFactory = new ObstacleFactory(context);
+        activeObstacles = new ArrayList<>();
 
-        leftButton = new GameButton(50, screenHeight - 150, 250, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.left_button));
-        rightButton = new GameButton(300, screenHeight - 150, 500, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.right_button));
-        jumpButton = new GameButton(screenWidth - 250, screenHeight - 150, screenWidth - 50, screenHeight - 50, BitmapFactory.decodeResource(context.getResources(), R.drawable.jump_button));
-        //used to control whether a view can gain focus, which means it can receive input events like key presses/touch events.
-        setFocusable(true);
+        initializeScoreEffects();
+    }
 
+    private void initializeScoreEffects() {
+        // Score logic
+        score = 0;
+        timeElapsed = 0;
 
+        // Paint for the text
+        scorePaint = new Paint();
+        scorePaint.setColor(0xFFFFFFFF); // White text color
+        scorePaint.setTextSize(80); // Larger text size
+        scorePaint.setFakeBoldText(true); // Bold text
+        scorePaint.setShadowLayer(8.0f, 4.0f, 4.0f, 0xFF000000); // Black shadow for depth
+        scorePaint.setTextAlign(Paint.Align.CENTER); // Center-align the text
+        Typeface customFont = ResourcesCompat.getFont(getContext(), R.font.americancapt); // Replace with your font resource
+        if (customFont != null) {
+            scorePaint.setTypeface(customFont);
+        }
 
+        // Paint for the background box
+        scoreBackgroundPaint = new Paint();
+        scoreBackgroundPaint.setColor(0x99000000); // Semi-transparent black
+        scoreBackgroundPaint.setStyle(Paint.Style.FILL);
+        scoreBackgroundPaint.setAntiAlias(true); // Smooth edges
     }
 
     @Override
-    public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
+    public void surfaceCreated(SurfaceHolder surfaceHolder) {
         gameLoop.startLoop();
     }
 
     @Override
-    public void surfaceChanged(@NonNull SurfaceHolder surfaceHolder, int i, int i1, int i2) {
-    }
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int format, int width, int height) {}
 
     @Override
-    public void surfaceDestroyed(@NonNull SurfaceHolder surfaceHolder) {
-        gameLoop.stopLoop();
-    }
-
-    public void update() {
-        hamster.update();
-        background.update();
-    }
-
-    public void resume(){
-        gameLoop.startLoop();
-    }
-
-    public void pause(){
+    public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         gameLoop.stopLoop();
     }
 
     @Override
-    public void draw(Canvas canvas){
+    public void draw(Canvas canvas) {
         super.draw(canvas);
-
         background.draw(canvas);
         hamster.draw(canvas);
-        roomba.draw(canvas);
-        leftButton.draw(canvas);
-        rightButton.draw(canvas);
-        jumpButton.draw(canvas);
-    }
 
-
-    //two dummy varaibles so game doesn't break before user touches screen
-    private boolean isButtonPressed = false;
-    private int activePointerId = -1;
-
-//the line directlhy below just gets the IDE to stop bothering me lols. Doesn't cause any errors
-    @SuppressLint("ClickableViewAccessibility")
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        //gets the action, and where the user has touched
-        int action = event.getActionMasked();
-        int pointerIndex = event.getActionIndex();
-        int pointerId = event.getPointerId(pointerIndex);
-
-
-        //switch case for where the user has touched (if they've touched the buttons)
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:
-                if (leftButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
-                    isButtonPressed = true;
-                    activePointerId = pointerId;
-                    hamster.moveLeft();
-                } else if (rightButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
-                    isButtonPressed = true;
-                    activePointerId = pointerId;
-                    hamster.moveRight();
-                } else if (jumpButton.contains(event.getX(pointerIndex), event.getY(pointerIndex))) {
-
-                    isButtonPressed = true;
-                    //i took this next line out bc it makes the hamster stop moving when jumping
-                   // activePointerId = pointerId;
-                    hamster.jump();
-                }
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                if (isButtonPressed) {
-                    int index = event.findPointerIndex(activePointerId);
-                    if (index != -1) {
-                        float x = event.getX(index);
-                        float y = event.getY(index);
-                        if (!leftButton.contains(x, y) && !rightButton.contains(x, y)) {
-                            // Finger moved outside the move forward or backward buttons
-                            releaseLeftRightButtons();
-                        }
-
-                    }
-                }
-                break;
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (pointerId == activePointerId) {
-                    releaseLeftRightButtons();
-                }
-                break;
+        // Draw all active obstacles
+        for (Obstacle obstacle : activeObstacles) {
+            obstacle.draw(canvas);
         }
-        return true;
+
+        drawScore(canvas); // Draw the enhanced score
     }
 
-    private void releaseLeftRightButtons() {
-        isButtonPressed = false;
-        activePointerId = -1;
+    private void drawScore(Canvas canvas) {
+        int screenWidth = getWidth();
+        int padding = 20; // Padding around the score box
+        int boxWidth = 300; // Width of the score box
+        int boxHeight = 120; // Height of the score box
+        int boxX = screenWidth - boxWidth - padding; // X-coordinate of the box
+        int boxY = padding; // Y-coordinate of the box
+
+        // Draw the background box
+        canvas.drawRoundRect(
+                boxX, // Left
+                boxY, // Top
+                boxX + boxWidth, // Right
+                boxY + boxHeight, // Bottom
+                30, // Corner radius X
+                30, // Corner radius Y
+                scoreBackgroundPaint
+        );
+
+        // Draw the score text inside the box
+        String scoreText = "Score: " + score;
+        canvas.drawText(scoreText, boxX + (boxWidth / 2.0f), boxY + (boxHeight / 1.5f), scorePaint);
+    }
+
+    public void update(float dt) {
+        if (isPaused) return;
+
+        dt *= GLOBAL_SPEED_MULTIPLIER;
+
+        hamster.update(dt);
+        background.update(dt);
+
+        updateScore(dt);
+        updateObstacles(dt);
+    }
+
+    private void updateScore(float dt) {
+        timeElapsed += dt;
+        if (timeElapsed >= 1.0f) {
+            score++;
+            timeElapsed = 0;
+        }
+    }
+
+    private void updateObstacles(float dt) {
+        timeSinceLastSpawn += dt;
+
+        // Spawn a new obstacle if the interval has passed
+        if (timeSinceLastSpawn >= spawnInterval) {
+            Obstacle newObstacle = obstacleFactory.createRandomObstacle(getWidth(), getHeight());
+            activeObstacles.add(newObstacle);
+            timeSinceLastSpawn = 0;
+        }
+
+        // Update and remove off-screen obstacles
+        Iterator<Obstacle> iterator = activeObstacles.iterator();
+        while (iterator.hasNext()) {
+            Obstacle obstacle = iterator.next();
+            obstacle.update(dt);
+
+            if (obstacle.isOffScreen(getHeight())) {
+                iterator.remove();
+            }
+
+            if (hamster.isColliding(obstacle.getX(), obstacle.getY(), obstacle.getWidth(), obstacle.getHeight())) {
+                // Handle player death. whatever that may entail
+                handlePlayerDeath();
+            }
+        }
+    }
+
+
+    public void handlePlayerDeath() {
+        mainActivity.playerDeath(score);
+        pauseGame();
+        //gameLoop.pauseLoop(); ISSUE HERE
+
+
+    }
+
+    public void pauseGame() {
+        isPaused = true;
+    }
+
+    public void resumeGame() {
+        isPaused = false;
+    }
+
+    public void onLeftButtonPressed() {
+        hamster.moveLeft();
+    }
+
+    public void stopMovement() {
         hamster.stopMoving();
-
-    }
-    /* saving this in case we need it later for whatever reason, but it can be safely deleted prolly
-private boolean isInButton(MotionEvent event, Rect buttonRect) {
-    return buttonRect.contains((int)event.getX(), (int)event.getY());
-}*/
-/*
-    //onTouchEvent for controls
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE:
-                //gets position of tap
-                int x = (int) event.getX();
-                int y = (int) event.getY();
-                //checks to see if tap is in each button's rectangle
-                if (leftButton.isPressed(x,y)) {
-                    hamster.moveLeft();
-                } else if (rightButton.isPressed(x,y)) {
-                    hamster.moveRight();
-                } else if(jumpButton.isPressed(x,y)) {
-                    hamster.jump();
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-                hamster.stopMoving();
-                break;
-        }
-        return true;
     }
 
-
-    public boolean isMovingForward() {
-        return isMovingForward;
+    public void onRightButtonPressed() {
+        hamster.moveRight();
     }
 
-    public boolean isMovingBackward() {
-        return isMovingBackward;
-    }*/
+    public void onJumpButtonPressed() {
+        hamster.jump();
+    }
 }
