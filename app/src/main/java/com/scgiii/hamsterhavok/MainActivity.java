@@ -49,17 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize button logic
         setupButtons();
-    }
-
-    private void setupButtons() {
-        // Pause button logic
-        ImageButton pauseButton = findViewById(R.id.pauseButton);
-        pauseButton.setOnClickListener(v -> {
-            showPauseScreen(); // Call the method to show the pause overlay
-        });
-
-
-         */
         //Initializing the mediaplayer
         mediaPlayer = MediaPlayer.create(this, R.raw.background_music);
         mediaPlayer.setLooping(true);
@@ -87,16 +76,14 @@ public class MainActivity extends AppCompatActivity {
         };
         LocalBroadcastManager.getInstance(this).registerReceiver(musicSettingReceiver, new IntentFilter("music_setting_changed"));
     }
-    }
 
+    private void setupButtons() {
+        // Pause button logic
+        ImageButton pauseButton = findViewById(R.id.pauseButton);
+        pauseButton.setOnClickListener(v -> {
+            showPauseScreen(); // Call the method to show the pause overlay
+        });
 
-    @Override
-    protected void onDestroy(){
-        super.onDestroy();
-        if (mediaPlayer != null){ //yarg hrow
-            mediaPlayer.release();
-            mediaPlayer = null;
-          
         // Left button logic
         ImageButton leftButton = findViewById(R.id.leftButton);
         leftButton.setOnTouchListener((v, event) -> {
@@ -124,6 +111,15 @@ public class MainActivity extends AppCompatActivity {
         jumpButton.setOnClickListener(v -> gameViews.onJumpButtonPressed());
     }
 
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        if (mediaPlayer != null) { //yarg hrow
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
 
     private void initializePauseOverlay() {
         if (pauseOverlay == null) {
@@ -163,13 +159,12 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (gameViews != null) {
             gameViews.resumeGame();
+            }
            //resumes music if it's not playing
         SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
         boolean musicOn = preferences.getBoolean("music_on", true);
         if (musicOn && !mediaPlayer.isPlaying()){
             mediaPlayer.start();
-        }
-
         }
     }
 

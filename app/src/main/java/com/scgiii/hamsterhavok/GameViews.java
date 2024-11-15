@@ -151,7 +151,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     private void updateScore(float dt) {
         timeElapsed += dt;
         if (timeElapsed >= 1.0f) {
-            score++;
+            score ++;
             timeElapsed = 0;
         }
     }
