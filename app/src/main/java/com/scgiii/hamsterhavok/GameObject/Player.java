@@ -1,10 +1,10 @@
-package com.scgiii.hamsterhavok;
+package com.scgiii.hamsterhavok.GameObject;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 
-public class Player extends PlayerObject{
+public class Player extends PlayerObject {
     private float velocityX, velocityY;
     private final float gravity;
     private boolean isJumping;
@@ -67,16 +67,12 @@ public class Player extends PlayerObject{
         velocityX = 0;
     }
 
-    public void setPosition(float x, float y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public float getPositionX() {
-        return x;
-    }
-    public float getPositionY() {
-        return y;
+    public boolean isColliding(float obstacleX, float roombaY, float obstacleWidth, float obstacleHeight) {
+        //does this even work??? haven't tested...
+        return x < obstacleX + obstacleWidth &&
+                x + width > obstacleX &&
+                y < roombaY + obstacleHeight &&
+                y + height > roombaY;
     }
 
 }
