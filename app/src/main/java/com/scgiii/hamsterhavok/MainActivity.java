@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -29,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     private View pauseOverlay;
     private View deathOverlay;
     private boolean isPauseOverlayAdded = false;
+
+    private static final String PREFS_NAME = "GamePrefs";
+    private static final String HIGH_SCORE_KEY = "high_score";
     //private FrameLayout gameContainer;
 
     @Override
@@ -218,10 +222,34 @@ public class MainActivity extends AppCompatActivity {
         if (deathOverlay == null) {
             initializeDeathOverlay();
         }
+
+        // Get the current high score
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        int highScore = prefs.getInt(HIGH_SCORE_KEY, 0);
+
+        // Update high score if necessary
+        if (finalScore > highScore) {
+            highScore = finalScore;
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt(HIGH_SCORE_KEY, highScore);
+            editor.apply();
+
+            // Show congratulations popup
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("New High Score!")
+                    .setMessage("Congratulations! You've set a new high score of " + highScore + "!")
+                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                    .show();
+
+        }
+
         TextView finalScoreText = deathOverlay.findViewById(R.id.finalScoreText);
+        TextView highScoreText = deathOverlay.findViewById(R.id.highScoreText);
+
         finalScoreText.setText("Final Score: " + finalScore);
+        highScoreText.setText("High Score: " + highScore);
+
         deathOverlay.setVisibility(View.VISIBLE);
-        //gameViews.pauseGame();
     }
 
     private void restartGame() {

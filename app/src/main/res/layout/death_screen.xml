@@ -20,8 +20,18 @@
             android:textColor="#FFFFFF"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"/>
+
         <TextView
             android:id="@+id/finalScoreText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:id="@+id/highScoreText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20sp"
