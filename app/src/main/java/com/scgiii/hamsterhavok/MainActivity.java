@@ -125,14 +125,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private TextView countdownText;
     private void initializePauseOverlay() {
         if (pauseOverlay == null) {
             // Inflate the pause screen layout
             pauseOverlay = getLayoutInflater().inflate(R.layout.pause_screen, null);
 
+            countdownText = pauseOverlay.findViewById(R.id.countdownText);
+            countdownText.setVisibility(View.GONE);
+
             // Set up the resume button logic
             View resumeButton = pauseOverlay.findViewById(R.id.resumeButton);
-            resumeButton.setOnClickListener(v -> hidePauseScreen());
+            resumeButton.setOnClickListener(v -> startCountdown());
 
             // Add the pause overlay to the main container
             FrameLayout gameContainer = findViewById(R.id.mainContainer);
@@ -149,6 +153,11 @@ public class MainActivity extends AppCompatActivity {
             pauseOverlay.setVisibility(View.VISIBLE);
         }
         gameViews.pauseGame();
+
+        // Pauses music when paused
+        if (mediaPlayer != null && mediaPlayer.isPlaying()){
+            mediaPlayer.pause();
+        }
     }
 
     private void hidePauseScreen() {
@@ -156,6 +165,13 @@ public class MainActivity extends AppCompatActivity {
             pauseOverlay.setVisibility(View.GONE);
         }
         gameViews.resumeGame();
+
+        // Resumes music if on
+        SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
+        boolean musicOn = preferences.getBoolean("music_on", true);
+        if (mediaPlayer != null && musicOn && !mediaPlayer.isPlaying()){
+            mediaPlayer.start();
+        }
     }
 
     @Override
@@ -167,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
            //resumes music if it's not playing
         SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
         boolean musicOn = preferences.getBoolean("music_on", true);
-        if (musicOn && !mediaPlayer.isPlaying()){
+        if (mediaPlayer != null && musicOn && !mediaPlayer.isPlaying()){
             mediaPlayer.start();
         }
     }
@@ -179,9 +195,26 @@ public class MainActivity extends AppCompatActivity {
             gameViews.pauseGame();
         }
       //pauses music when app paused
-       if (mediaPlayer.isPlaying()){
+       if (mediaPlayer != null && mediaPlayer.isPlaying()){
          
             mediaPlayer.pause();
+        }
+    }
+
+    //Implementing a startCountdown that also accounts for the music
+    private void startCountdown(){
+        if (countdownText != null){
+            countdownText.setVisibility(View.VISIBLE);
+            //Starts the countdown starting at 3
+            countdownText.setText("3");
+
+            new android.os.Handler().postDelayed(() -> countdownText.setText("2"), 1000);
+            new android.os.Handler().postDelayed(() -> countdownText.setText("1"), 2000);
+            // Handling the music to start at the 3k in delay
+            new android.os.Handler().postDelayed(() -> {
+                countdownText.setVisibility(View.GONE);
+                hidePauseScreen();
+            }, 3000); //Completing the lambda expression
         }
     }
 
@@ -221,6 +254,10 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "Showing death screen.");
         if (deathOverlay == null) {
             initializeDeathOverlay();
+        }
+
+        if (mediaPlayer != null && mediaPlayer.isPlaying()){
+            mediaPlayer.pause();
         }
 
         // Get the current high score
@@ -263,6 +300,12 @@ public class MainActivity extends AppCompatActivity {
         // Create and add a new GameViews
         gameViews = new GameViews(this,this);
         gameContainer.addView(gameViews, 0);
+
+        // Restarts the mustic
+        if (mediaPlayer != null){
+            mediaPlayer.seekTo(0);
+            mediaPlayer.start();
+        }
 
         // Resume the game
         gameViews.resumeGame();
