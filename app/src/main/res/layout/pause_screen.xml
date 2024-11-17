@@ -38,5 +38,13 @@
             android:layout_height="wrap_content"
             android:text="Resume"
             android:layout_marginTop="24dp" />
+
+        <!-- Exit Button -->
+        <Button
+            android:id="@+id/exitButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Exit"
+            android:layout_marginTop="24dp"/>
     </LinearLayout>
 </FrameLayout>
