@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -176,7 +177,10 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
                 iterator.remove();
             }
 
-            if (hamster.isColliding(obstacle.getX(), obstacle.getY(), obstacle.getWidth(), obstacle.getHeight())) {
+            /* Updated to compare hitboxes.
+            * The getHitBox method excludes the transparent parts.
+            * */
+            if (RectF.intersects(hamster.getHitbox(), obstacle.getHitbox())) {
                 // Handle player death. whatever that may entail
                 handlePlayerDeath();
             }

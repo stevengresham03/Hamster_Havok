@@ -2,6 +2,7 @@ package com.scgiii.hamsterhavok.GameObject;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.RectF;
 
 public abstract class Obstacle {
     protected Bitmap bitmap;
@@ -39,5 +40,15 @@ public abstract class Obstacle {
 
     public int getHeight() {
         return bitmap.getHeight();
+    }
+
+    public RectF getHitbox(){
+        float padding = 5;
+        return new RectF(
+                x + padding,
+                y + padding,
+                x + getWidth() - padding,
+                y + getHeight() - padding
+        );
     }
 }
