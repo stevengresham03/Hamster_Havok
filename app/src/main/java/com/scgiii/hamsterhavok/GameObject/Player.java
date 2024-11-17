@@ -48,6 +48,11 @@ public class Player extends PlayerObject {
         }
     }
 
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public void moveLeft() {
         velocityX = -500; // Pixels per second, adjust as needed
     }

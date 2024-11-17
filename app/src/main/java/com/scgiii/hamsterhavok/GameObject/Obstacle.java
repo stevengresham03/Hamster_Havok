@@ -8,6 +8,7 @@ public abstract class Obstacle {
     protected float x, y;
     protected float speed;
 
+
     public Obstacle(Bitmap bitmap, float x, float y, float speed) {
         this.bitmap = bitmap;
         this.x = x;

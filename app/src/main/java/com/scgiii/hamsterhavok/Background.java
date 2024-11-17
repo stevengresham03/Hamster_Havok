@@ -8,7 +8,10 @@ import android.graphics.Canvas;
 public class Background {
     private Bitmap bitmap;
     private float offsetX1, offsetX2;
-    public static float scrollSpeed = 300; // Pixels per second
+    public static float scrollSpeed = 300; // Initial scroll speed in pixels per second
+    private static final float BASE_SPEED = 300; // Starting speed
+    private static final float INCREMENT_FACTOR = 2f; // Speed increment per score point
+    private static final float MAX_SPEED = 800; // Maximum scroll speed
     private final int screenWidth;
     private final int screenHeight;
 
@@ -25,7 +28,20 @@ public class Background {
         offsetX2 = bitmap.getWidth();
     }
 
-    public void update(float dt) {
+    public void increaseScrollSpeed(float increment) {
+        scrollSpeed += increment;
+    }
+
+    public void resetScrollSpeed() {
+        scrollSpeed = 300; // Reset to initial speed
+    }
+
+
+    public void update(float dt, int score) {
+        // Gradually increase speed based on score, capped at MAX_SPEED
+        scrollSpeed = Math.min(BASE_SPEED + (score * INCREMENT_FACTOR), MAX_SPEED);
+
+        // Update background positions
         offsetX1 -= scrollSpeed * dt;
         offsetX2 -= scrollSpeed * dt;
 
@@ -42,4 +58,5 @@ public class Background {
         canvas.drawBitmap(bitmap, offsetX1, 0, null);
         canvas.drawBitmap(bitmap, offsetX2, 0, null);
     }
+
 }

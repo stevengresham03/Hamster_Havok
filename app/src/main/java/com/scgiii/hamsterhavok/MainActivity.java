@@ -256,17 +256,28 @@ public class MainActivity extends AppCompatActivity {
         if (deathOverlay != null) {
             deathOverlay.setVisibility(View.GONE);
         }
+
         // Remove the old GameViews
         FrameLayout gameContainer = findViewById(R.id.mainContainer);
         gameContainer.removeView(gameViews);
 
         // Create and add a new GameViews
-        gameViews = new GameViews(this,this);
+        gameViews = new GameViews(this, this);
         gameContainer.addView(gameViews, 0);
+
+        // Reset background scroll speed
+        gameViews.getGameBackground().resetScrollSpeed();
+
+        // Reset the player's position
+        gameViews.getPlayer().setPosition(
+                gameViews.getWidth() / 2f,
+                gameViews.getHeight() - gameViews.getPlayer().getHeight()
+        );
 
         // Resume the game
         gameViews.resumeGame();
     }
+
 
 
 }
