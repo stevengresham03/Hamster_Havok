@@ -7,8 +7,7 @@ public class SmallObstacle extends Obstacle {
     private boolean isFalling;
 
     public SmallObstacle(Bitmap bitmap, float x, float y, float speed, boolean isFalling) {
-        super(bitmap, x, y, speed);
-        this.isFalling = isFalling;
+        super(bitmap, x, y, speed, isFalling);
     }
 
     @Override

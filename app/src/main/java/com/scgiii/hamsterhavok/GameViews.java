@@ -187,6 +187,11 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         Iterator<Obstacle> iterator = activeObstacles.iterator();
         while (iterator.hasNext()) {
             Obstacle obstacle = iterator.next();
+
+            if (!obstacle.isFalling()){
+                obstacle.setSpeed(Background.scrollSpeed);
+            }
+
             obstacle.update(dt);
 
             if (obstacle.isOffScreen(getHeight())) {
