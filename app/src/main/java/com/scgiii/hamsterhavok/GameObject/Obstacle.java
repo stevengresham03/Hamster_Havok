@@ -9,11 +9,18 @@ public abstract class Obstacle {
     protected float x, y;
     protected float speed;
 
+    private float hitboxPaddingX;
+    private float hitboxPaddingY;
+
     public Obstacle(Bitmap bitmap, float x, float y, float speed) {
         this.bitmap = bitmap;
         this.x = x;
         this.y = y;
         this.speed = speed;
+
+        // Hitbox padding
+        this.hitboxPaddingX = bitmap.getWidth() * 0.005f;
+        this.hitboxPaddingY = bitmap.getHeight() * 0.005f;
     }
 
     public void draw(Canvas canvas) {
@@ -43,12 +50,11 @@ public abstract class Obstacle {
     }
 
     public RectF getHitbox(){
-        float padding = 5;
         return new RectF(
-                x + padding,
-                y + padding,
-                x + getWidth() - padding,
-                y + getHeight() - padding
+                x + hitboxPaddingX,
+                y + hitboxPaddingY,
+                x + bitmap.getWidth() - hitboxPaddingX,
+                y + bitmap.getHeight() - hitboxPaddingY
         );
     }
 }

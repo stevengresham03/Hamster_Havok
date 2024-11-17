@@ -12,6 +12,9 @@ public class Player extends PlayerObject {
     public static int screenHeight;
     public int screenWidth;
 
+    private float hitboxPaddingX;
+    private float hitboxPaddingY;
+
     public Player(Context context, Bitmap bitmap, float x, float y) {
         super(bitmap, x, y);
         this.velocityX = 0;
@@ -20,6 +23,10 @@ public class Player extends PlayerObject {
         this.isJumping = false;
         this.screenHeight = context.getResources().getDisplayMetrics().heightPixels;
         this.screenWidth = context.getResources().getDisplayMetrics().widthPixels;
+
+        // Calculate the hitbox padding dynamically with the image dimensions
+        this.hitboxPaddingX = bitmap.getWidth() * 0.05f;
+        this.hitboxPaddingY = bitmap.getHeight() * 0.05f;
     }
 
     @Override
@@ -101,12 +108,11 @@ public class Player extends PlayerObject {
     * The smaller hitbox improves collision detection so that it's based on the visible portion of the image.
     */
     public RectF getHitbox(){
-        float padding = 10;
         return new RectF(
-                x +padding,
-                y+ padding,
-                x + bitmap.getWidth() - padding,
-                 y + bitmap.getHeight() - padding
+                x + hitboxPaddingX,
+                y+ hitboxPaddingY,
+                x + bitmap.getWidth() - hitboxPaddingX,
+                 y + bitmap.getHeight() - hitboxPaddingY
         );
     }
 
