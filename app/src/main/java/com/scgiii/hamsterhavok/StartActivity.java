@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class StartActivity extends AppCompatActivity {
+    private TextView highScoreValue;
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -18,8 +20,18 @@ public class StartActivity extends AppCompatActivity {
         ImageButton settingsButton = findViewById(R.id.settings_button);
         ImageButton howToPlayButton = findViewById(R.id.how_to_play_button);
 
-        //Display the high score
-        TextView highScoreValue = findViewById(R.id.highScoreValue);
+        // Initialize the high score display
+        highScoreValue = findViewById(R.id.highScoreValue);
+
+        //listeners
+        startButton.setOnClickListener(v -> startGame());
+        settingsButton.setOnClickListener(v -> openSettings());
+        howToPlayButton.setOnClickListener(view -> openHowToPlay());
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
 
         //Getting high score from sharedpref
         SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
@@ -27,11 +39,6 @@ public class StartActivity extends AppCompatActivity {
 
         //Setting the val
         highScoreValue.setText(String.valueOf(highScore));
-
-        //listeners
-        startButton.setOnClickListener(v -> startGame());
-        settingsButton.setOnClickListener(v -> openSettings());
-        howToPlayButton.setOnClickListener(view -> openHowToPlay());
     }
 
     private void startGame(){
