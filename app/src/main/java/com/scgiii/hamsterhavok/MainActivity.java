@@ -357,6 +357,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("MainActivity", "Hiding death overlay");
             deathOverlay.setVisibility(View.GONE);
         }
+
         // Remove the old GameViews
         FrameLayout gameContainer = findViewById(R.id.mainContainer);
         if (gameViews != null){
@@ -385,6 +386,15 @@ public class MainActivity extends AppCompatActivity {
 
             }
         }
+
+        // Reset background scroll speed
+        gameViews.getGameBackground().resetScrollSpeed();
+
+        // Reset the player's position
+        gameViews.getPlayer().setPosition(
+                gameViews.getWidth() / 2f,
+                gameViews.getHeight() - gameViews.getPlayer().getHeight()
+        );
 
         // Resume the game
         Log.d("MainActivity", "Resuming the game");
@@ -428,6 +438,7 @@ public class MainActivity extends AppCompatActivity {
             overlay.setVisibility(View.GONE);
         }
     }
+
 
 
 }

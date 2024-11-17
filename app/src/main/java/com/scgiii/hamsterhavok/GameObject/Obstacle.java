@@ -8,15 +8,18 @@ public abstract class Obstacle {
     protected Bitmap bitmap;
     protected float x, y;
     protected float speed;
+    protected boolean isFalling;
 
     private float hitboxPaddingX;
     private float hitboxPaddingY;
 
-    public Obstacle(Bitmap bitmap, float x, float y, float speed) {
+
+    public Obstacle(Bitmap bitmap, float x, float y, float speed, boolean isFalling) {
         this.bitmap = bitmap;
         this.x = x;
         this.y = y;
         this.speed = speed;
+        this.isFalling = isFalling;
 
         // Hitbox padding
         this.hitboxPaddingX = bitmap.getWidth() * 0.005f;
@@ -29,8 +32,17 @@ public abstract class Obstacle {
 
     public abstract void update(float dt);
 
+    public void setSpeed(float speed)
+    {
+        this.speed = speed;
+    }
+
     public boolean isOffScreen(float screenHeight) {
         return y > screenHeight || x + bitmap.getWidth() < 0;
+    }
+
+    public boolean isFalling(){
+        return this.isFalling;
     }
 
     public float getX() {

@@ -38,6 +38,8 @@ public class ObstacleFactory {
 
         bitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 8, bitmap.getHeight() / 8, true);
 
-        return new MovingObstacle(bitmap, spawnX, spawnY, isFalling ? 300 : Background.scrollSpeed, isFalling);
+        float initialSpeed = isFalling ? 300 : Background.scrollSpeed;
+
+        return new MovingObstacle(bitmap, spawnX, spawnY, initialSpeed, isFalling);
     }
 }
