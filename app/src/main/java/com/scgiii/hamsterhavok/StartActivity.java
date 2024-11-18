@@ -2,11 +2,13 @@ package com.scgiii.hamsterhavok;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 public class StartActivity extends AppCompatActivity {
     private TextView highScoreValue;
@@ -39,6 +41,12 @@ public class StartActivity extends AppCompatActivity {
 
         //Setting the val
         highScoreValue.setText(String.valueOf(highScore));
+
+        // Updating the high score font
+        Typeface customFont = ResourcesCompat.getFont(this, R.font.americancapt);
+        if (customFont != null){
+            highScoreValue.setTypeface(customFont);
+        }
     }
 
     private void startGame(){
