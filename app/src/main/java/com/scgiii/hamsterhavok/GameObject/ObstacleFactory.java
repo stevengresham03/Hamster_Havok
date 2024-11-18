@@ -31,24 +31,32 @@ public class ObstacleFactory {
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba);
                 break;
             case 1:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.books);
+                int case1Index = random.nextInt(2);
+                switch (case1Index){
+                    case 0:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.brick);
+                        break;
+                    default:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.books);
+                        break;
+                }
                 break;
             case 2:
                 int case2Index = random.nextInt(3);
                 switch (case2Index){
                     case 0:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.baby);
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.microwave);
                         break;
                     case 1:
                         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bowling_ball);
                         break;
                     default:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bomb);
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.chair);
                         break;
                 }
                 break;
             case 3:
-                int case3Index = random.nextInt(3);
+                int case3Index = random.nextInt(2);
                 switch (case3Index){
                     case 0:
                         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.clothes);
@@ -65,38 +73,31 @@ public class ObstacleFactory {
                 int case4Index = random.nextInt(4);
                 switch (case4Index){
                     case 0:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.cat);
-                        break;
-                    case 1:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.microwave);
-                        break;
-                    case 2:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.chair);
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bomb);
                         break;
                     default:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.brick);
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.baby);
                         break;
-
                 }
                 break;
         }
 
         // This is so that the scaling for the obstacles can be done dynamically.
         // The standard is 15% of the og size and then the switch statement changes specifics
-        float scaleFactor = 0.15f;
+        float scaleFactor = 0.12f;
 
         switch (obstacleType){
             case 1:
-                scaleFactor = 0.45f;
+                scaleFactor = 0.32f;
                 break;
             case 2:
                 scaleFactor = 0.35f;
                 break;
             case 3:
-                scaleFactor = 0.25f;
+                scaleFactor = 0.40f;
                 break;
             case 4:
-                scaleFactor = 0.2f;
+                scaleFactor = 0.45f;
                 break;
         }
 
