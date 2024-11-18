@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -142,19 +143,36 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         dt *= GLOBAL_SPEED_MULTIPLIER;
 
         hamster.update(dt);
-        background.update(dt);
+        background.update(dt, score); // Pass score to control speed
 
         updateScore(dt);
         updateObstacles(dt);
     }
 
+
+
+    // New method to increase difficulty
+    private void increaseDifficultyBasedOnScore() {
+        // Example: Increase speed every 10 points
+        if (score % 10 == 0 && score > 0) {
+            background.increaseScrollSpeed(20); // Adjust increment as needed
+        }
+
+    }
+
     private void updateScore(float dt) {
         timeElapsed += dt;
         if (timeElapsed >= 1.0f) {
-            score ++;
+            score++;
             timeElapsed = 0;
+
+            // Rapidly increase the scroll speed
+            if (score % 5 == 0) { // Every 5 points
+                background.increaseScrollSpeed(50); // Adjust increment as needed
+            }
         }
     }
+
 
     private void updateObstacles(float dt) {
         timeSinceLastSpawn += dt;
@@ -170,13 +188,21 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
         Iterator<Obstacle> iterator = activeObstacles.iterator();
         while (iterator.hasNext()) {
             Obstacle obstacle = iterator.next();
+
+            if (!obstacle.isFalling()){
+                obstacle.setSpeed(Background.scrollSpeed);
+            }
+
             obstacle.update(dt);
 
             if (obstacle.isOffScreen(getHeight())) {
                 iterator.remove();
             }
 
-            if (hamster.isColliding(obstacle.getX(), obstacle.getY(), obstacle.getWidth(), obstacle.getHeight())) {
+            /* Updated to compare hitboxes.
+            * The getHitBox method excludes the transparent parts.
+            * */
+            if (RectF.intersects(hamster.getHitbox(), obstacle.getHitbox())) {
                 // Handle player death. whatever that may entail
                 handlePlayerDeath();
             }
@@ -199,6 +225,16 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     public void resumeGame() {
         isPaused = false;
     }
+
+    public Background getGameBackground() {
+        return background;
+    }
+
+    public Player getPlayer() {
+        return hamster;
+    }
+
+
 
     public void onLeftButtonPressed() {
         hamster.moveLeft();

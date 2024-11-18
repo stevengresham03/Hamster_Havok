@@ -3,6 +3,7 @@ package com.scgiii.hamsterhavok.GameObject;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.RectF;
 
 public class Player extends PlayerObject {
     private float velocityX, velocityY;
@@ -10,6 +11,9 @@ public class Player extends PlayerObject {
     private boolean isJumping;
     public static int screenHeight;
     public int screenWidth;
+
+    private float hitboxPaddingX;
+    private float hitboxPaddingY;
 
     public Player(Context context, Bitmap bitmap, float x, float y) {
         super(bitmap, x, y);
@@ -19,6 +23,10 @@ public class Player extends PlayerObject {
         this.isJumping = false;
         this.screenHeight = context.getResources().getDisplayMetrics().heightPixels;
         this.screenWidth = context.getResources().getDisplayMetrics().widthPixels;
+
+        // Calculate the hitbox padding dynamically with the image dimensions
+        this.hitboxPaddingX = bitmap.getWidth() * 0.05f;
+        this.hitboxPaddingY = bitmap.getHeight() * 0.05f;
     }
 
     @Override
@@ -48,6 +56,11 @@ public class Player extends PlayerObject {
         }
     }
 
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public void moveLeft() {
         velocityX = -500; // Pixels per second, adjust as needed
     }
@@ -67,12 +80,45 @@ public class Player extends PlayerObject {
         velocityX = 0;
     }
 
-    public boolean isColliding(float obstacleX, float roombaY, float obstacleWidth, float obstacleHeight) {
+    /*
+    * This is the OG isColliding method. I updated it to be obstacleY instead of the roomba.
+    *
+    * the bitmap class includes data on the pixels, like size and color (w/h of pixels and color/transparency).
+    * In the context of collision detection, the width and height of the `Bitmap` are used to calculate the bounding box (the rectangular area that surrounds the visible image).
+    *
+    * The draw method above already implements the canvas, which draws the image in x, y positions
+    * The original isColliding method checks for overlaps using simple rectangle math.
+    * However, this method includes the entire image dimensions (transparent and visible parts), leading to inaccurate collision detection.
+    *
+    * The RectF class defines a smaller hitbox on a floating pt lvl
+    public boolean isColliding(float obstacleX, float obstacleY, float obstacleWidth, float obstacleHeight) {
         //does this even work??? haven't tested...
         return x < obstacleX + obstacleWidth &&
-                x + width > obstacleX &&
-                y < roombaY + obstacleHeight &&
-                y + height > roombaY;
+                x + bitmap.getWidth() > obstacleX &&
+                y < obstacleY + obstacleHeight &&
+                y + bitmap.getHeight() > obstacleY;
+    } */
+
+    /*
+    * Updated isColliding method.
+    * Calls RectF.intersects instead which bc it checks if two rectangular areas overlap.
+    * */
+    public boolean isColliding(RectF otherHitbox) {
+        return RectF.intersects(this.getHitbox(), otherHitbox);
+    }
+
+    /*
+    * Defines a custom hitbox for the player by creating a `RectF` (rectangle defined with floating-point vals).
+    * The padding variable reduces the size of the hitbox by shrinking it inward.
+    * The smaller hitbox improves collision detection so that it's based on the visible portion of the image.
+    */
+    public RectF getHitbox(){
+        return new RectF(
+                x + hitboxPaddingX,
+                y+ hitboxPaddingY,
+                x + bitmap.getWidth() - hitboxPaddingX,
+                 y + bitmap.getHeight() - hitboxPaddingY
+        );
     }
 
 }

@@ -1,12 +1,16 @@
 package com.scgiii.hamsterhavok;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class StartActivity extends AppCompatActivity {
+    private TextView highScoreValue;
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -16,10 +20,25 @@ public class StartActivity extends AppCompatActivity {
         ImageButton settingsButton = findViewById(R.id.settings_button);
         ImageButton howToPlayButton = findViewById(R.id.how_to_play_button);
 
+        // Initialize the high score display
+        highScoreValue = findViewById(R.id.highScoreValue);
+
         //listeners
         startButton.setOnClickListener(v -> startGame());
         settingsButton.setOnClickListener(v -> openSettings());
         howToPlayButton.setOnClickListener(view -> openHowToPlay());
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        //Getting high score from sharedpref
+        SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
+        int highScore = preferences.getInt("high_score", 0);
+
+        //Setting the val
+        highScoreValue.setText(String.valueOf(highScore));
     }
 
     private void startGame(){

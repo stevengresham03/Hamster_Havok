@@ -17,12 +17,14 @@
     <!-- Pause Button -->
     <ImageButton
         android:id="@+id/pauseButton"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:src="@drawable/ic_pause"
         android:background="@null"
         android:layout_margin="16dp"
-        android:layout_gravity="top|start" />
+        android:layout_gravity="top|start"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"/>
 
     <!-- Left Button -->
     <ImageButton

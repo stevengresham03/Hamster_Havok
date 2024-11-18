@@ -12,6 +12,41 @@
         android:scaleType="centerCrop"
         />
 
+    <!-- High score -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/highScoreContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/highScoreLabel"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/high_score_label"
+            android:contentDescription="@string/high_score_label"
+            android:scaleType="fitCenter"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView
+            android:id="@+id/highScoreValue"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/genericHighScoreVal"
+            android:textSize="24sp"
+            android:textColor="#FFFF05"
+            android:gravity="center"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintTop_toTopOf="@id/highScoreLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/highScoreLabel"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <ImageButton
         android:id="@+id/settings_button"
         android:layout_width="75dp"
@@ -83,7 +118,7 @@
 
     <ImageButton
         android:id="@+id/start_button"
-        android:layout_width="150dp"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:src="@drawable/start"
         android:scaleType="fitCenter"
