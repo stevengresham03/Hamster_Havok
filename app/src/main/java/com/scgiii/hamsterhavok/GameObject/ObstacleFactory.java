@@ -22,7 +22,8 @@ public class ObstacleFactory {
         boolean isFalling = random.nextBoolean(); // Randomly decide if the obstacle falls
         Bitmap bitmap;
         float spawnX = isFalling ? random.nextFloat() * screenWidth : screenWidth + 50; // Spawn above screen for falling
-        float spawnY = isFalling ? -50 : screenHeight - 100; // Off-screen for falling, ground level otherwise
+        //float spawnY = isFalling ? -50 : screenHeight - 100; // Off-screen for falling, ground level otherwise
+        //float spawnY = isFalling ? -bitmap.getHeight() : screenHeight - bitmap.getHeight();
 
         int obstacleType = random.nextInt(4); // Select obstacle type
         switch (obstacleType) {
@@ -33,34 +34,67 @@ public class ObstacleFactory {
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.books);
                 break;
             case 2:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.baby);
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bowling_ball);
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bomb);
+                int case2Index = random.nextInt(3);
+                switch (case2Index){
+                    case 0:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.baby);
+                        break;
+                    case 1:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bowling_ball);
+                        break;
+                    default:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bomb);
+                        break;
+                }
                 break;
             case 3:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.clothes);
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pillow);
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.basketball);
+                int case3Index = random.nextInt(3);
+                switch (case3Index){
+                    case 0:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.clothes);
+                        break;
+                    case 1:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pillow);
+                        break;
+                    default:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.basketball);
+                        break;
+                }
                 break;
             default:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.cat);
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.microwave);
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.chair);
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.brick);
+                int defaultIndex = random.nextInt(4);
+                switch (defaultIndex){
+                    case 0:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.cat);
+                        break;
+                    case 1:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.microwave);
+                        break;
+                    case 2:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.chair);
+                        break;
+                    default:
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.brick);
+                        break;
+
+                }
+                break;
         }
 
         // This is so that the scaling for the obstacles can be done dynamically.
-        // The standard is 15% of the og size and then the if and else-if block changes specifics
+        // The standard is 15% of the og size and then the switch statement changes specifics
         float scaleFactor = 0.15f;
 
-        if (obstacleType == 2){
-            scaleFactor = 0.45f;
-        } else if (obstacleType == 3) {
-            scaleFactor = 0.25f;
-        } else if (obstacleType == 2) {
-            scaleFactor = 0.35f;
-        } else if (obstacleType == 1) {
-            scaleFactor = 0.45f;
+        switch (obstacleType){
+            case 1:
+                scaleFactor = 0.45f;
+                break;
+            case 2:
+                scaleFactor = 0.35f;
+                break;
+            case 3:
+                scaleFactor = 0.25f;
+                break;
         }
 
         // This gets the new size based on its scaleFactor
@@ -69,6 +103,8 @@ public class ObstacleFactory {
 
 
         bitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+
+        float spawnY = isFalling ? -bitmap.getHeight() : screenHeight - bitmap.getHeight();
 
         float initialSpeed = isFalling ? 300 : Background.scrollSpeed;
 
