@@ -20,12 +20,12 @@ public class ObstacleFactory {
 
     public Obstacle createRandomObstacle(float screenWidth, float screenHeight) {
         boolean isFalling = random.nextBoolean(); // Randomly decide if the obstacle falls
-        Bitmap bitmap;
+        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.brick);
         float spawnX = isFalling ? random.nextFloat() * screenWidth : screenWidth + 50; // Spawn above screen for falling
         //float spawnY = isFalling ? -50 : screenHeight - 100; // Off-screen for falling, ground level otherwise
         //float spawnY = isFalling ? -bitmap.getHeight() : screenHeight - bitmap.getHeight();
 
-        int obstacleType = random.nextInt(4); // Select obstacle type
+        int obstacleType = random.nextInt(5); // Select obstacle type
         switch (obstacleType) {
             case 0:
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba);
@@ -61,9 +61,9 @@ public class ObstacleFactory {
                         break;
                 }
                 break;
-            default:
-                int defaultIndex = random.nextInt(4);
-                switch (defaultIndex){
+            case 4:
+                int case4Index = random.nextInt(4);
+                switch (case4Index){
                     case 0:
                         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.cat);
                         break;
@@ -94,6 +94,9 @@ public class ObstacleFactory {
                 break;
             case 3:
                 scaleFactor = 0.25f;
+                break;
+            case 4:
+                scaleFactor = 0.2f;
                 break;
         }
 
