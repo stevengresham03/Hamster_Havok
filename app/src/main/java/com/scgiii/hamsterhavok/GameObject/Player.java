@@ -21,12 +21,15 @@ public class Player extends PlayerObject {
         this.velocityY = 0;
         this.gravity = 1500f; // Pixels per second squared, adjust as needed
         this.isJumping = false;
-        this.screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+        this.screenHeight = context.getResources().getDisplayMetrics().heightPixels - 50; // Offset so it's not in the ground
         this.screenWidth = context.getResources().getDisplayMetrics().widthPixels;
 
         // Calculate the hitbox padding dynamically with the image dimensions
         this.hitboxPaddingX = bitmap.getWidth() * 0.05f;
         this.hitboxPaddingY = bitmap.getHeight() * 0.05f;
+
+        // Changing the initial position
+        //this.y = screenHeight - bitmap.getHeight() - 100;
     }
 
     @Override
@@ -71,7 +74,7 @@ public class Player extends PlayerObject {
 
     public void jump() {
         if (!isJumping) {
-            velocityY = -1500; // Pixels per second, adjust as needed
+            velocityY = -1450; // Pixels per second, adjust as needed
             isJumping = true;
         }
     }
