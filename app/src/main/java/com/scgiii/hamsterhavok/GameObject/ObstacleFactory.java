@@ -31,15 +31,7 @@ public class ObstacleFactory {
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba);
                 break;
             case 1:
-                int case1Index = random.nextInt(2);
-                switch (case1Index){
-                    case 0:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.brick);
-                        break;
-                    default:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.books);
-                        break;
-                }
+                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.books);
                 break;
             case 2:
                 int case2Index = random.nextInt(3);
@@ -88,7 +80,7 @@ public class ObstacleFactory {
 
         switch (obstacleType){
             case 1:
-                scaleFactor = 0.32f;
+                scaleFactor = 0.30f;
                 break;
             case 2:
                 scaleFactor = 0.35f;
