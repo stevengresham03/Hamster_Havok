@@ -32,19 +32,25 @@
             android:visibility="gone" />
 
         <!-- Resume Button -->
-        <Button
+        <ImageButton
+            android:src="@drawable/resume_button"
             android:id="@+id/resumeButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Resume"
-            android:layout_marginTop="24dp" />
+            android:layout_width="185dp"
+            android:layout_height="105dp"
+            android:scaleType="fitCenter"
+            android:background="@null"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center_horizontal"/>
 
         <!-- Exit Button -->
-        <Button
+        <ImageButton
+            android:src="@drawable/exit_button"
             android:id="@+id/exitButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Exit"
-            android:layout_marginTop="24dp"/>
+            android:layout_width="150dp"
+            android:layout_height="70dp"
+            android:scaleType="fitCenter"
+            android:background="@null"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center_horizontal"/>
     </LinearLayout>
 </FrameLayout>

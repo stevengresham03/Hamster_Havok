@@ -39,19 +39,27 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"/>
 
-        <Button
+        <ImageButton
+            android:src="@drawable/restart_button"
             android:id="@+id/restartButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="80dp"
             android:text="Restart"
             android:layout_gravity="center_horizontal"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:padding="0dp"
             android:layout_marginBottom="8dp"/>
 
-        <Button
+        <ImageButton
+            android:src="@drawable/exit_button"
             android:id="@+id/exitButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="70dp"
             android:text="Exit"
+            android:background="@null"
+            android:scaleType="fitCenter"
+            android:padding="0dp"
             android:layout_gravity="center_horizontal"/>
 
     </LinearLayout>
