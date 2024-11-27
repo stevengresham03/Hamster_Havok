@@ -9,11 +9,13 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -27,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver musicSettingReceiver;
 
     private GameViews gameViews;
+    public GameLoop gameLoop;
     private View pauseOverlay;
     private View deathOverlay;
     //private boolean isPauseOverlayAdded = false;
@@ -44,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize GameViews and add it to the main container
         gameViews = new GameViews( this,this);
+
+        // Get the SurfaceHolder from your GameViews
+        SurfaceHolder surfaceHolder = gameViews.getHolder();
+
+        // Instantiate the GameLoop
+        gameLoop = new GameLoop(gameViews, surfaceHolder);
         FrameLayout gameContainer = findViewById(R.id.mainContainer);
         gameContainer.addView(gameViews, 0); // Add GameViews behind all UI elements
 
@@ -94,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         LocalBroadcastManager.getInstance(this).registerReceiver(musicSettingReceiver, new IntentFilter("music_setting_changed"));
+
+
+       
     }
 
     private void setupButtons() {
@@ -134,6 +146,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy(){
         super.onDestroy();
+        if (gameLoop != null) {
+            gameLoop.stopLoop();
+        }
         if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
@@ -225,11 +240,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
+        if (gameLoop != null) {
+            gameLoop.resumeLoop();
+        }
         if (gameViews != null) {
             gameViews.resumeGame();
             }
+
            //resumes music if it's not playing
         SharedPreferences preferences = getSharedPreferences("GamePrefs", MODE_PRIVATE);
         boolean musicOn = preferences.getBoolean("music_on", true);
@@ -239,11 +258,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
+        if (gameLoop != null) {
+            gameLoop.pauseLoop();
+
+        }
         if (gameViews != null) {
             gameViews.pauseGame();
         }
+
       //pauses music when app paused
        if (mediaPlayer != null && mediaPlayer.isPlaying()){
          
@@ -438,6 +462,8 @@ public class MainActivity extends AppCompatActivity {
             overlay.setVisibility(View.GONE);
         }
     }
+
+
 
 
 

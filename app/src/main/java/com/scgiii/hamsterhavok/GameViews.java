@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -89,6 +90,7 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         gameLoop.startLoop();
+
     }
 
     @Override
@@ -96,7 +98,9 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        gameLoop.stopLoop();
+        if (gameLoop != null) {
+            gameLoop.stopLoop();
+        }
     }
 
     @Override
@@ -251,4 +255,36 @@ public class GameViews extends SurfaceView implements SurfaceHolder.Callback {
     public void onJumpButtonPressed() {
         hamster.jump();
     }
+/*
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState();
+        outState.putInt("score", score);
+        // Save other important game state
+    }
+
+
+
+    // Method to save state
+    public void saveState(Bundle outState) {
+        outState.putInt("score", score);
+        outState.putBoolean("isGameRunning", is);
+        // Save other game state
+    }
+
+    // Method to restore state
+    public void restoreState(Bundle savedState) {
+        if (savedState != null) {
+            currentScore = savedState.getInt("score", 0);
+            currentLevel = savedState.getInt("level", 1);
+            isGameRunning = savedState.getBoolean("isGameRunning", false);
+            // Restore other game state
+            updateGameState(); // Method to update game based on restored state
+        } else {
+            initializeNewGame(); // Method to start a new game
+        }
+    }
+*/
+
+
 }
