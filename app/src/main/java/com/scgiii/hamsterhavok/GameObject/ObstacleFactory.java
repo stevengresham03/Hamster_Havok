@@ -25,10 +25,10 @@ public class ObstacleFactory {
         //float spawnY = isFalling ? -50 : screenHeight - 100; // Off-screen for falling, ground level otherwise
         //float spawnY = isFalling ? -bitmap.getHeight() : screenHeight - bitmap.getHeight();
 
-        int obstacleType = random.nextInt(5); // Select obstacle type
+        int obstacleType = random.nextInt(6); // Select obstacle type
         switch (obstacleType) {
             case 0:
-                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.roomba);
+                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.baby);
                 break;
             case 1:
                 bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.books);
@@ -57,7 +57,7 @@ public class ObstacleFactory {
                         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pillow);
                         break;
                     default:
-                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.basketball);
+                        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pillow);
                         break;
                 }
                 break;
@@ -72,6 +72,9 @@ public class ObstacleFactory {
                         break;
                 }
                 break;
+            case 5:
+                bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.basketball);
+                break;
         }
 
         // This is so that the scaling for the obstacles can be done dynamically.
@@ -79,6 +82,9 @@ public class ObstacleFactory {
         float scaleFactor = 0.12f;
 
         switch (obstacleType){
+            case 0:
+                scaleFactor = 0.45f;
+                break;
             case 1:
                 scaleFactor = 0.30f;
                 break;
@@ -91,6 +97,10 @@ public class ObstacleFactory {
             case 4:
                 scaleFactor = 0.45f;
                 break;
+            case 5:
+                scaleFactor = 0.25f;
+                break;
+
         }
 
         // This gets the new size based on its scaleFactor
