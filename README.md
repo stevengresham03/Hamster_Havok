@@ -1,3 +1,7 @@
+This is an Android Studio Java project. Either download the project and import it into your android studio to play it OR download "Hamster Havok!" from the Google Playstore!
+
+
+
 Play "Hamster Havok!", a thrilling game with never ending fun and excitement!
 
 ## How to play
